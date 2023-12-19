@@ -26,6 +26,10 @@ spring:
         show_sql: false
         format_sql: true
         highlight_sql: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
 logging:
   pattern:
     console: "[%d{HH:mm:ss.SSS}][%-5level][%logger.%method:line%line] - %msg%n"
@@ -35,4 +39,5 @@ logging:
         SQL: debug
         type.descriptor.sql: trace
 jwt:
-  secret: DadFufN4Oui8Bfv3ScFj6R9fyJ9hD45E6AGFsXgFsRhT4YSdSb
+  access_secret: DadFufN4Oui8Bfv3ScFj6R9fyJ9hD45E6AGFsXgFsRhT4YSdSb
+  refresh_secret: 2X2N7NQvCJyvQUSK3nnvsuRmVC7NA4XaydaWcYsmGFzTcrYmMN
