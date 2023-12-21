@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Pattern
 import org.springframework.security.crypto.password.PasswordEncoder
+import java.io.Serializable
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -93,10 +94,10 @@ data class TokenRefreshDto(
 }
 
 data class MemberDtoResponse(
-    val id: Long,
-    val userId: String,
-    val name: String,
-    val birthDate: String,
-    val gender: String,
-    val email: String,
+    val id: Long = 0,
+    val userId: String = "",
+    val name: String = "",
+    val birthDate: String = "",
+    val gender: String = "",
+    val email: String = "",
 )
