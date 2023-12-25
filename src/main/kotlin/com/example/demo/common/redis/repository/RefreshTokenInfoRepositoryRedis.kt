@@ -15,7 +15,7 @@ class RefreshTokenInfoRepositoryRedis(
     private val redisTemplate: RedisTemplate<String, String>
 ) {
     companion object {
-        private const val KEY_PREFIX = "refreshToken" // refreshToken:{refreshToken}:{userId}
+        private const val KEY_PREFIX = "refreshToken" // refreshToken:{userId}:{refreshToken}
     }
 
     fun save(userId: String, refreshToken: String) {
@@ -30,15 +30,11 @@ class RefreshTokenInfoRepositoryRedis(
 
     fun deleteByRefreshToken(refreshToken: String) {
         val keys = redisTemplate.keys("$KEY_PREFIX:*:$refreshToken")
-        keys.forEach { key ->
-            redisTemplate.delete(key)
-        }
+        redisTemplate.delete(keys)
     }
 
     fun deleteByUserId(userId: String) {
         val keys = redisTemplate.keys("$KEY_PREFIX:$userId:*")
-        keys.forEach { key ->
-            redisTemplate.delete(key)
-        }
+        redisTemplate.delete(keys)
     }
 }
