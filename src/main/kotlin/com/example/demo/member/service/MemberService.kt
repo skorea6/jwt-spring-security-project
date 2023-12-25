@@ -61,7 +61,7 @@ class MemberService(
         val authentication = authenticationManagerBuilder.`object`.authenticate(authenticationToken)
         val createToken: TokenInfo = jwtTokenProvider.createToken(authentication)
 
-        refreshTokenInfoRepositoryRedis.save(createToken.refreshToken, loginDto.userId)
+        refreshTokenInfoRepositoryRedis.save(loginDto.userId, createToken.refreshToken)
         return createToken
     }
 
@@ -76,18 +76,18 @@ class MemberService(
      * Refresh 토큰 검증 후 토큰 재발급
      */
     fun validateRefreshTokenAndCreateToken(refreshToken: String): TokenInfo{
-        // 새로운 accessToken , refreshToken
-        val newTokenInfo: TokenInfo = jwtTokenProvider.validateRefreshTokenAndCreateToken(refreshToken)
-
         // Redis에서 refreshToken 존재 여부 확인
         refreshTokenInfoRepositoryRedis.findByRefreshToken(refreshToken)
             ?: throw InvalidInputException("refreshToken", "만료되거나 찾을 수 없는 Refresh 토큰입니다. 재로그인이 필요합니다.")
+
+        // 새로운 accessToken , refreshToken
+        val newTokenInfo: TokenInfo = jwtTokenProvider.validateRefreshTokenAndCreateToken(refreshToken)
 
         // 기존 refreshToken 제거 : refreshToken 은 1회용이어야
         refreshTokenInfoRepositoryRedis.deleteByRefreshToken(refreshToken)
 
         // 새로운 refreshToken Redis에 추가
-        refreshTokenInfoRepositoryRedis.save(newTokenInfo.refreshToken, newTokenInfo.userId)
+        refreshTokenInfoRepositoryRedis.save(newTokenInfo.userId, newTokenInfo.refreshToken)
 
         return newTokenInfo
     }
