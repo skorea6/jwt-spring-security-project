@@ -4,7 +4,6 @@ import com.example.demo.common.authority.JwtTokenProvider
 import com.example.demo.common.authority.TokenInfo
 import com.example.demo.common.exception.ApiCustomException
 import com.example.demo.common.exception.InvalidInputException
-import com.example.demo.common.redis.entity.RefreshTokenInfoRedis
 import com.example.demo.common.redis.repository.RefreshTokenInfoRepositoryRedis
 import com.example.demo.common.status.ROLE
 import com.example.demo.member.dto.LoginDto
@@ -47,10 +46,9 @@ class MemberService(
 
         member = memberDtoRequest.toEntity()
         member.password = passwordEncoder.encode(member.password)
-        memberRepository.save(member)
 
-        val memberRole = MemberRole(null, ROLE.MEMBER, member)
-        memberRoleRepository.save(memberRole)
+        memberRepository.save(member)
+        memberRoleRepository.save(MemberRole(null, ROLE.MEMBER, member))
 
         return "회원가입이 완료되었습니다."
     }
@@ -62,28 +60,34 @@ class MemberService(
         val authenticationToken = UsernamePasswordAuthenticationToken(loginDto.userId, loginDto.password)
         val authentication = authenticationManagerBuilder.`object`.authenticate(authenticationToken)
         val createToken: TokenInfo = jwtTokenProvider.createToken(authentication)
-        refreshTokenInfoRepositoryRedis.save(RefreshTokenInfoRedis(createToken.refreshToken, loginDto.userId))
+
+        refreshTokenInfoRepositoryRedis.save(createToken.refreshToken, loginDto.userId)
         return createToken
     }
 
+    /**
+     * 유저의 모든 Refresh 토큰 삭제
+     */
     fun deleteAllRefreshToken(userId: String) {
         refreshTokenInfoRepositoryRedis.deleteByUserId(userId)
     }
 
+    /**
+     * Refresh 토큰 검증 후 토큰 재발급
+     */
     fun validateRefreshTokenAndCreateToken(refreshToken: String): TokenInfo{
-        // accessToken 만료 되었는지 확인 => 하면 안될듯... 프론트단에서 만료전에 호출할수도 있기 때문에.
-        // Redis 에서 해당 refreshToken 존재 여부 확인
-        val refreshTokenInfo: RefreshTokenInfoRedis = refreshTokenInfoRepositoryRedis.findByIdOrNull(refreshToken)
+        // 새로운 accessToken , refreshToken
+        val newTokenInfo: TokenInfo = jwtTokenProvider.validateRefreshTokenAndCreateToken(refreshToken)
+
+        // Redis에서 refreshToken 존재 여부 확인
+        refreshTokenInfoRepositoryRedis.findByRefreshToken(refreshToken)
             ?: throw InvalidInputException("refreshToken", "만료되거나 찾을 수 없는 Refresh 토큰입니다. 재로그인이 필요합니다.")
 
-        // 새로운 accessToken , refreshToken
-        val newTokenInfo: TokenInfo = jwtTokenProvider.validateRefreshTokenAndCreateToken(refreshTokenInfo.refreshToken)
-
         // 기존 refreshToken 제거 : refreshToken 은 1회용이어야
-        refreshTokenInfoRepositoryRedis.deleteById(refreshToken)
-        // 새로운 refreshToken redis에 추가
-        refreshTokenInfoRepositoryRedis.save(RefreshTokenInfoRedis(newTokenInfo.refreshToken, newTokenInfo.userId))
-        // 기존 accessToken 제거? Db에 저장 안할꺼니까... 그냥 냅두죠.
+        refreshTokenInfoRepositoryRedis.deleteByRefreshToken(refreshToken)
+
+        // 새로운 refreshToken Redis에 추가
+        refreshTokenInfoRepositoryRedis.save(newTokenInfo.refreshToken, newTokenInfo.userId)
 
         return newTokenInfo
     }
