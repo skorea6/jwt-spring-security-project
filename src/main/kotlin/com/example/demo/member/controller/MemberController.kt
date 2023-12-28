@@ -3,8 +3,11 @@ package com.example.demo.member.controller
 import com.example.demo.common.authority.TokenInfo
 import com.example.demo.common.dto.BaseResponse
 import com.example.demo.common.dto.CustomUser
+import com.example.demo.common.redis.dto.RefreshTokenDeleteDto
+import com.example.demo.common.redis.dto.RefreshTokenInfoDtoResponse
 import com.example.demo.member.dto.*
 import com.example.demo.member.service.MemberService
+import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.context.SecurityContextHolder
@@ -33,25 +36,47 @@ class MemberController(
      * 로그인
      */
     @PostMapping("/login")
-    fun login(@RequestBody @Valid loginDto: LoginDto): BaseResponse<TokenInfo> {
-        val tokenInfo: TokenInfo = memberService.login(loginDto)
+    fun login(@RequestBody @Valid loginDto: LoginDto, request: HttpServletRequest): BaseResponse<TokenInfo> {
+        val tokenInfo: TokenInfo = memberService.login(request, loginDto)
         return BaseResponse(data = tokenInfo)
     }
 
     /**
-     * Refresh 토큰
+     * Refresh 토큰을 이용하여 토큰 재발급
      */
-    @PostMapping("/token/refresh")
-    fun tokenRefresh(@RequestBody @Valid tokenRefreshDto: TokenRefreshDto): BaseResponse<TokenInfo> {
-        val tokenInfo: TokenInfo = memberService.validateRefreshTokenAndCreateToken(tokenRefreshDto.refreshToken)
+    @PostMapping("/token/refresh/issue")
+    fun issueRefreshToken(@RequestBody @Valid tokenRefreshDto: TokenRefreshDto, request: HttpServletRequest): BaseResponse<TokenInfo> {
+        val tokenInfo: TokenInfo = memberService.validateRefreshTokenAndCreateToken(request, tokenRefreshDto.refreshToken)
         return BaseResponse(data = tokenInfo)
     }
 
     /**
-     * 로그아웃
+     * 모든 Refresh 토큰 정보 확인
+     * 기기 정보 확인 API
      */
-    @GetMapping("/token/logout")
-    fun tokenLogout(): BaseResponse<Unit> {
+    @GetMapping("/token/refresh/list")
+    fun getRefreshTokenList(): BaseResponse<List<RefreshTokenInfoDtoResponse>> {
+        val userId = (SecurityContextHolder.getContext().authentication.principal as CustomUser).username
+        val response = memberService.getRefreshTokenList(userId)
+        return BaseResponse(data = response)
+    }
+
+    /**
+     * 특정 Refresh 토큰 제거 API
+     */
+    @PostMapping("/token/refresh/delete")
+    fun deleteRefreshToken(@RequestBody @Valid refreshTokenDeleteDto: RefreshTokenDeleteDto): BaseResponse<Unit> {
+        val userId = (SecurityContextHolder.getContext().authentication.principal as CustomUser).username
+        val resultMsg: String = memberService.deleteRefreshToken(userId, refreshTokenDeleteDto.secret)
+        return BaseResponse(statusMessage = resultMsg)
+    }
+
+    /**
+     * 로그아웃 API
+     * 모든 Refresh 토큰 제거
+     */
+    @GetMapping("/token/refresh/logout")
+    fun logoutRefreshToken(): BaseResponse<Unit> {
         val userId = (SecurityContextHolder.getContext().authentication.principal as CustomUser).username
         memberService.deleteAllRefreshToken(userId)
         return BaseResponse()

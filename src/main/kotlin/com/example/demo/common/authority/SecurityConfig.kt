@@ -24,7 +24,7 @@ class SecurityConfig(
             .csrf { it.disable() }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests {
-                it.requestMatchers("/api/member/signup", "/api/member/login", "/api/member/token/refresh").anonymous()
+                it.requestMatchers("/api/member/signup", "/api/member/login", "/api/member/token/refresh/issue").anonymous()
                     .requestMatchers("/api/member/**").hasRole("MEMBER")
                     .anyRequest().permitAll()
             }
