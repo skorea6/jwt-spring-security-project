@@ -7,8 +7,6 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Pattern
-import org.springframework.security.crypto.password.PasswordEncoder
-import java.io.Serializable
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -16,6 +14,10 @@ data class MemberDtoRequest(
     var id: Long?,
 
     @field:NotBlank
+    @field:Pattern(
+        regexp = "^[a-zA-Z0-9]{4,20}$",
+        message = "영문, 숫자만 가능하며, 4~20자리로 입력해주세요"
+    )
     @JsonProperty("userId")
     private val _userId: String?,
 
@@ -28,6 +30,10 @@ data class MemberDtoRequest(
     private val _password: String?,
 
     @field:NotBlank
+    @field:Pattern(
+        regexp = "^[a-zA-Z0-9가-힣!@#$%^&*()-+=\\[\\]{};':\",./<>?|\\\\]{2,20}$",
+        message = "영문, 한글, 숫자, 특수문자만 가능하며, 2~20자리로 입력해주세요"
+    )
     @JsonProperty("name")
     private val _name: String?,
 
@@ -66,7 +72,15 @@ data class MemberDtoRequest(
         LocalDate.parse(this, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 
     fun toEntity(): Member =
-        Member(id, userId, password, name, birthDate, gender, email)
+        Member(
+            id = id,
+            userId = userId,
+            password = password,
+            name = name,
+            birthDate = birthDate,
+            gender = gender,
+            email = email
+        )
 }
 
 data class LoginDto(
@@ -97,7 +111,7 @@ data class MemberDtoResponse(
     val id: Long = 0,
     val userId: String = "",
     val name: String = "",
-    val birthDate: String = "",
-    val gender: String = "",
+    val birthDate: String? = "",
+    val gender: String? = "",
     val email: String = "",
 )
