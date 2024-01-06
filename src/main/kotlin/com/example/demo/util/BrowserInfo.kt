@@ -21,7 +21,7 @@ class BrowserInfo {
         return map
     }
 
-    private fun getIpAddress(request: HttpServletRequest): String {
+    fun getIpAddress(request: HttpServletRequest): String {
         var ipAddress: String? = request.getHeader("X-Forwarded-For")
 
         if (ipAddress.isNullOrBlank() || ipAddress.equals("unknown", ignoreCase = true)) {
