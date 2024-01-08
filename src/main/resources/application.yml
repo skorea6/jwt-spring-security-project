@@ -35,21 +35,21 @@ spring:
       client:
         registration:
           google:
-            client-id: 932964084082-67kjt84961t2vjppr8hhikpf3pa3k07r.apps.googleusercontent.com
-            client-secret: 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
+            client-id: id
+            client-secret: secret
             redirect-uri: http://localhost:8080/login/oauth2/code/google
             authorization-grant-type: authorization_code
             scope: profile, email
           naver:
-            client-id: P4918s8lnCl2ByVquUFd
-            client-secret: 9T6_k0nLeA
+            client-id: id
+            client-secret: secret
             redirect-uri: http://localhost:8080/login/oauth2/code/naver
             authorization-grant-type: authorization_code
             scope: name, email, profile_image
             client-name: Naver
           kakao:
-            client-id: 1b212b4a0d800216b920e4ee9f6bb0cc
-            client-secret: Ls6mjXCDvW4hgXkN78YTmYLXHDZBDmHI
+            client-id: id
+            client-secret: secret
             redirect-uri: http://localhost:8080/login/oauth2/code/kakao
             client-authentication-method: client_secret_post
             authorization-grant-type: authorization_code
@@ -66,6 +66,8 @@ spring:
             token-uri: https://kauth.kakao.com/oauth/token
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
+  profiles:
+    include: secret
 logging:
   pattern:
     console: "[%d{HH:mm:ss.SSS}][%-5level][%logger.%method:line%line] - %msg%n"
