@@ -27,7 +27,7 @@ class RedisConfig(
     @Bean
     fun lettuceConnectionFactory(): LettuceConnectionFactory {
         val lettuceClientConfiguration = LettuceClientConfiguration.builder()
-            .commandTimeout(Duration.ZERO)
+//            .commandTimeout(Duration.ZERO)
             .shutdownTimeout(Duration.ZERO)
             .build()
         val redisStandaloneConfiguration = RedisStandaloneConfiguration(host, port)

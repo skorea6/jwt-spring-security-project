@@ -22,3 +22,9 @@ enum class ResultCode(val statusCode: Int, val message: String) {
 enum class ROLE {
     MEMBER
 }
+
+enum class SocialType {
+    KAKAO,
+    NAVER,
+    GOOGLE
+}

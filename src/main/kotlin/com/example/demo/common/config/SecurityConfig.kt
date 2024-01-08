@@ -1,15 +1,25 @@
 package com.example.demo.common.config
 
-import com.example.demo.common.authority.JwtAuthenticationFilter
-import com.example.demo.common.authority.JwtTokenProvider
+import com.example.demo.common.login.filter.CustomUsernamePasswordAuthenticationFilter
+import com.example.demo.common.login.handler.CustomLoginFailureHandler
+import com.example.demo.common.login.handler.CustomLoginSuccessHandler
+import com.example.demo.common.login.jwt.JwtAuthenticationFilter
+import com.example.demo.common.login.jwt.JwtTokenProvider
+import com.example.demo.common.login.service.CustomUserDetailsService
 import com.example.demo.common.oauth2.handler.OAuth2LoginFailureHandler
 import com.example.demo.common.oauth2.handler.OAuth2LoginSuccessHandler
 import com.example.demo.common.oauth2.service.CustomOAuth2UserService
+import com.example.demo.member.service.MemberService
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.security.authentication.AuthenticationManager
+import org.springframework.security.authentication.ProviderManager
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
@@ -18,10 +28,14 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(
+    private val objectMapper: ObjectMapper,
     private val jwtTokenProvider: JwtTokenProvider,
+    private val memberService: MemberService,
     private val entryPoint: AuthenticationEntryPoint,
+    private val passwordEncoder: PasswordEncoder,
     private val oAuth2LoginSuccessHandler: OAuth2LoginSuccessHandler,
     private val oAuth2LoginFailureHandler: OAuth2LoginFailureHandler,
+    private val customUserDetailsService: CustomUserDetailsService,
     private val customOAuth2UserService: CustomOAuth2UserService
 ) {
     @Bean
@@ -43,11 +57,45 @@ class SecurityConfig(
                     .failureHandler(oAuth2LoginFailureHandler) // 소셜 로그인 실패 시 핸들러 설정
                     .userInfoEndpoint { it.userService(customOAuth2UserService) } // customUserService 설정
             }
+            // 순서 : customUsernamePasswordAuthenticationFilter -> JwtAuthenticationFilter -> UsernamePasswordAuthenticationFilter
             .addFilterBefore(
-                JwtAuthenticationFilter(jwtTokenProvider), // 먼저 실행 (앞에 있는 필터가 통과하면 뒤에 있는 필터는 검사하지 않음)
+                customUsernamePasswordAuthenticationFilter(), // 먼저 실행 (앞에 있는 필터가 통과하면 뒤에 있는 필터는 검사하지 않음)
+                UsernamePasswordAuthenticationFilter::class.java
+            )
+            .addFilterBefore(
+                JwtAuthenticationFilter(jwtTokenProvider),
                 UsernamePasswordAuthenticationFilter::class.java
             )
             .exceptionHandling { it.authenticationEntryPoint(entryPoint) }
             .build()
+    }
+
+    @Bean
+    fun authenticationManager(): AuthenticationManager {
+        val provider = DaoAuthenticationProvider()
+        provider.setPasswordEncoder(passwordEncoder)
+        provider.setUserDetailsService(customUserDetailsService)
+        return ProviderManager(provider)
+    }
+
+    @Bean
+    fun loginSuccessHandler(): CustomLoginSuccessHandler {
+        return CustomLoginSuccessHandler(jwtTokenProvider, memberService, objectMapper)
+    }
+
+    @Bean
+    fun loginFailureHandler(): CustomLoginFailureHandler {
+        return CustomLoginFailureHandler(objectMapper)
+    }
+
+    @Bean
+    fun customUsernamePasswordAuthenticationFilter(): CustomUsernamePasswordAuthenticationFilter {
+        val customJsonUsernamePasswordLoginFilter = CustomUsernamePasswordAuthenticationFilter(objectMapper, memberService)
+        customJsonUsernamePasswordLoginFilter.setAuthenticationManager(authenticationManager())
+        customJsonUsernamePasswordLoginFilter.setAuthenticationSuccessHandler(loginSuccessHandler())
+        customJsonUsernamePasswordLoginFilter.setAuthenticationFailureHandler(loginFailureHandler())
+        customJsonUsernamePasswordLoginFilter.setFilterProcessesUrl("/api/member/login")
+        customJsonUsernamePasswordLoginFilter.afterPropertiesSet()
+        return customJsonUsernamePasswordLoginFilter
     }
 }
