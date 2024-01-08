@@ -1,12 +1,14 @@
-package com.example.demo.common.login.jwt
+package com.example.demo.common.authority
 
 import com.example.demo.common.exception.ApiCustomException
+import com.example.demo.member.repository.MemberRepository
 import jakarta.servlet.FilterChain
 import jakarta.servlet.ServletRequest
 import jakarta.servlet.ServletResponse
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.util.StringUtils
 import org.springframework.web.filter.GenericFilterBean
 

@@ -1,6 +1,6 @@
 package com.example.demo.common.redis.repository
 
-import com.example.demo.common.login.jwt.REFRESH_EXPIRATION_MILLISECONDS
+import com.example.demo.common.authority.REFRESH_EXPIRATION_MILLISECONDS
 import com.example.demo.common.redis.dto.RefreshTokenInfoDto
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer

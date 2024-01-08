@@ -1,16 +1,22 @@
 package com.example.demo.member.controller
 
+import com.example.demo.common.authority.TokenInfo
 import com.example.demo.common.dto.BaseResponse
-import com.example.demo.common.dto.CustomPrincipal
-import com.example.demo.common.login.TokenInfo
+import com.example.demo.common.dto.CustomUser
 import com.example.demo.common.redis.dto.RefreshTokenDeleteDto
 import com.example.demo.common.redis.dto.RefreshTokenInfoDtoResponse
 import com.example.demo.member.dto.*
 import com.example.demo.member.service.MemberService
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 
 @RequestMapping("/api/member")
 @RestController
@@ -27,40 +33,11 @@ class MemberController(
     }
 
     /**
-     * 회원가입 Oauth2
-     */
-    @PostMapping("/signup/oauth2")
-    fun signUpForOauth2(@RequestBody @Valid memberDtoForOauth2Request: MemberDtoForOauth2Request, request: HttpServletRequest): BaseResponse<TokenInfo> {
-        val tokenInfo: TokenInfo = memberService.signUpForOauth2(request, memberDtoForOauth2Request)
-        return BaseResponse(data = tokenInfo)
-    }
-
-    /**
-     * OAuth2 회원가입 전 - 회원 정보 가져오기
-     */
-    @GetMapping("/signup/oauth2/info")
-    fun memberInfoBeforeSignUpForOauth2(@RequestBody @Valid tokenForOauth2Dto: TokenForOauth2Dto): BaseResponse<MemberDtoResponse> {
-        val memberDtoResponse: MemberDtoResponse = memberService.memberInfoBeforeSignUpForOauth2(tokenForOauth2Dto)
-        return BaseResponse(data = memberDtoResponse)
-    }
-
-    /**
      * 로그인
      */
-    /**
     @PostMapping("/login")
     fun login(@RequestBody @Valid loginDto: LoginDto, request: HttpServletRequest): BaseResponse<TokenInfo> {
         val tokenInfo: TokenInfo = memberService.login(request, loginDto)
-        return BaseResponse(data = tokenInfo)
-    }
-    */
-
-    /**
-     * 로그인 oAuth2
-     */
-    @PostMapping("/login/oauth2")
-    fun loginForOauth2(@RequestBody @Valid tokenForOauth2Dto: TokenForOauth2Dto, request: HttpServletRequest): BaseResponse<TokenInfo> {
-        val tokenInfo: TokenInfo = memberService.loginForOauth2(request, tokenForOauth2Dto)
         return BaseResponse(data = tokenInfo)
     }
 
@@ -79,7 +56,7 @@ class MemberController(
      */
     @GetMapping("/token/refresh/list")
     fun getRefreshTokenList(): BaseResponse<List<RefreshTokenInfoDtoResponse>> {
-        val userId = (SecurityContextHolder.getContext().authentication.principal as CustomPrincipal).username
+        val userId = (SecurityContextHolder.getContext().authentication.principal as CustomUser).username
         val response = memberService.getRefreshTokenList(userId)
         return BaseResponse(data = response)
     }
@@ -89,7 +66,7 @@ class MemberController(
      */
     @PostMapping("/token/refresh/delete")
     fun deleteRefreshToken(@RequestBody @Valid refreshTokenDeleteDto: RefreshTokenDeleteDto): BaseResponse<Unit> {
-        val userId = (SecurityContextHolder.getContext().authentication.principal as CustomPrincipal).username
+        val userId = (SecurityContextHolder.getContext().authentication.principal as CustomUser).username
         val resultMsg: String = memberService.deleteRefreshToken(userId, refreshTokenDeleteDto.secret)
         return BaseResponse(statusMessage = resultMsg)
     }
@@ -100,7 +77,7 @@ class MemberController(
      */
     @GetMapping("/token/refresh/logout")
     fun logoutRefreshToken(): BaseResponse<Unit> {
-        val userId = (SecurityContextHolder.getContext().authentication.principal as CustomPrincipal).username
+        val userId = (SecurityContextHolder.getContext().authentication.principal as CustomUser).username
         memberService.deleteAllRefreshToken(userId)
         return BaseResponse()
     }
@@ -110,7 +87,7 @@ class MemberController(
      */
     @GetMapping("/info")
     fun searchMyInfo(): BaseResponse<MemberDtoResponse> {
-        val userId = (SecurityContextHolder.getContext().authentication.principal as CustomPrincipal).username
+        val userId = (SecurityContextHolder.getContext().authentication.principal as CustomUser).username
         val response = memberService.searchMyInfo(userId)
         return BaseResponse(data = response)
     }
@@ -119,9 +96,9 @@ class MemberController(
      * 내 정보 저장
      */
     @PutMapping("/info")
-    fun updateMyInfo(@RequestBody @Valid memberUpdateDtoRequest: MemberUpdateDtoRequest): BaseResponse<Unit> {
-        val userId = (SecurityContextHolder.getContext().authentication.principal as CustomPrincipal).username
-        val resultMsg: String = memberService.updateMyInfo(userId, memberUpdateDtoRequest)
+    fun saveMyInfo(@RequestBody @Valid memberDtoRequest: MemberDtoRequest): BaseResponse<Unit> {
+        val userId = (SecurityContextHolder.getContext().authentication.principal as CustomUser).username
+        val resultMsg: String = memberService.saveMyInfo(userId, memberDtoRequest)
         return BaseResponse(statusMessage = resultMsg)
     }
 }
