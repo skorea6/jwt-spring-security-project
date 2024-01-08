@@ -1,4 +1,4 @@
-package com.example.demo.common.login
+package com.example.demo.common.authority
 
 data class TokenInfo(
     val userId: String,

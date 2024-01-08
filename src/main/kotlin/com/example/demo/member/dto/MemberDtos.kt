@@ -10,47 +10,43 @@ import jakarta.validation.constraints.Pattern
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-
-private const val USER_ID_PATTERN = "^(?!kakao_|google_|naver_)[a-z0-9_]{4,20}$"
-private const val PASSWORD_PATTERN = "^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#\$%^&*()_+\\-=\\[\\]{};':\",./<>?|\\\\])[a-zA-Z0-9!@#\$%^&*()_+\\-=\\[\\]{};':\",./<>?|\\\\]{8,20}\$"
-private const val NICK_PATTERN = "^(?!kakao_|google_|naver_)[a-zA-Z0-9가-힣!@#$%^&*()-+=\\[\\]{};':\",./<>?|\\\\ㄱ-ㅎㅏ-ㅣ_ ]{2,20}$"
-private const val NAME_PATTERN = "^[a-zA-Z가-힣 ]{1,20}$"
-private const val BIRTH_DATE_PATTERN = "^([12]\\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01]))$"
-
-private const val USER_ID_MESSAGE = "영어 소문자, 숫자, 언더바만 가능하며, 4~20자리로 입력해주세요."
-private const val PASSWORD_MESSAGE = "영어, 숫자, 특수문자를 포함한 8~20자리로 입력해주세요."
-private const val NICK_MESSAGE = "영어, 한글, 숫자, 특정 특수문자만 가능하며, 2~20자리로 입력해주세요."
-private const val NAME_MESSAGE = "영문, 한글만 가능하며, 1~20자리로 입력해주세요."
-private const val BIRTH_DATE_MESSAGE = "날짜 형식(YYYY-MM-DD)을 확인해주세요."
-private const val GENDER_MESSAGE = "MAN 이나 WOMAN 중 하나를 선택해주세요."
-
 data class MemberDtoRequest(
     var id: Long?,
 
     @field:NotBlank
-    @field:Pattern(regexp = USER_ID_PATTERN, message = USER_ID_MESSAGE)
+    @field:Pattern(
+        regexp = "^[a-zA-Z0-9]{4,20}$",
+        message = "영문, 숫자만 가능하며, 4~20자리로 입력해주세요"
+    )
     @JsonProperty("userId")
     private val _userId: String?,
 
     @field:NotBlank
-    @field:Pattern(regexp = PASSWORD_PATTERN, message = PASSWORD_MESSAGE)
+    @field:Pattern(
+        regexp = "^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#\$%^&*])[a-zA-Z0-9!@#\$%^&*]{8,20}\$",
+        message = "영문, 숫자, 특수문자를 포함한 8~20자리로 입력해주세요"
+    )
     @JsonProperty("password")
     private val _password: String?,
 
     @field:NotBlank
-    @field:Pattern(regexp = NICK_PATTERN, message = NICK_MESSAGE)
-    @JsonProperty("nick")
-    private val _nick: String?,
-
-    @field:Pattern(regexp = NAME_PATTERN, message = NAME_MESSAGE)
+    @field:Pattern(
+        regexp = "^[a-zA-Z0-9가-힣!@#$%^&*()-+=\\[\\]{};':\",./<>?|\\\\]{2,20}$",
+        message = "영문, 한글, 숫자, 특수문자만 가능하며, 2~20자리로 입력해주세요"
+    )
     @JsonProperty("name")
     private val _name: String?,
 
-    @field:Pattern(regexp = BIRTH_DATE_PATTERN, message = BIRTH_DATE_MESSAGE)
+    @field:NotBlank
+    @field:Pattern(
+        regexp = "^([12]\\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01]))$",
+        message = "날짜형식(YYYY-MM-DD)을 확인해주세요"
+    )
     @JsonProperty("birthDate")
     private val _birthDate: String?,
 
-    @field:ValidEnum(enumClass = Gender::class, message = GENDER_MESSAGE)
+    @field:NotBlank
+    @field:ValidEnum(enumClass = Gender::class, message = "MAN 이나 WOMAN 중 하나를 선택해주세요.")
     @JsonProperty("gender")
     private val _gender: String?,
 
@@ -63,14 +59,12 @@ data class MemberDtoRequest(
         get() = _userId!!
     val password: String
         get() = _password!!
-    val nick: String
-        get() = _nick!!
-    val name: String?
-        get() = _name
-    val birthDate: LocalDate?
-        get() = _birthDate?.toLocalDate()
-    val gender: Gender?
-        get() = _gender?.let { Gender.valueOf(it) }
+    val name: String
+        get() = _name!!
+    val birthDate: LocalDate
+        get() = _birthDate!!.toLocalDate()
+    val gender: Gender
+        get() = Gender.valueOf(_gender!!)
     val email: String
         get() = _email!!
 
@@ -82,7 +76,6 @@ data class MemberDtoRequest(
             id = id,
             userId = userId,
             password = password,
-            nick = nick,
             name = name,
             birthDate = birthDate,
             gender = gender,
@@ -90,81 +83,6 @@ data class MemberDtoRequest(
         )
 }
 
-data class MemberUpdateDtoRequest(
-    @field:Pattern(regexp = PASSWORD_PATTERN, message = PASSWORD_MESSAGE)
-    @JsonProperty("password")
-    private val _password: String?,
-
-    @field:NotBlank
-    @field:Pattern(regexp = NICK_PATTERN, message = NICK_MESSAGE)
-    @JsonProperty("nick")
-    private val _nick: String?,
-
-    @field:Pattern(regexp = NAME_PATTERN, message = NAME_MESSAGE)
-    @JsonProperty("name")
-    private val _name: String?,
-
-    @field:Pattern(regexp = BIRTH_DATE_PATTERN, message = BIRTH_DATE_MESSAGE)
-    @JsonProperty("birthDate")
-    private val _birthDate: String?,
-
-    @field:ValidEnum(enumClass = Gender::class, message = GENDER_MESSAGE)
-    @JsonProperty("gender")
-    private val _gender: String?,
-) {
-    val password: String?
-        get() = _password
-    val nick: String
-        get() = _nick!!
-    val name: String?
-        get() = _name
-    val birthDate: LocalDate?
-        get() = _birthDate?.toLocalDate()
-    val gender: Gender?
-        get() = _gender?.let { Gender.valueOf(it) }
-
-    private fun String.toLocalDate(): LocalDate =
-        LocalDate.parse(this, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-}
-
-data class MemberDtoForOauth2Request(
-    @field:NotBlank
-    @JsonProperty("token")
-    private val _token: String?,
-
-    @field:NotBlank
-    @field:Pattern(regexp = NICK_PATTERN, message = NICK_MESSAGE)
-    @JsonProperty("nick")
-    private val _nick: String?,
-
-    @field:Pattern(regexp = NAME_PATTERN, message = NAME_MESSAGE)
-    @JsonProperty("name")
-    private val _name: String?,
-
-    @field:Pattern(regexp = BIRTH_DATE_PATTERN, message = BIRTH_DATE_MESSAGE)
-    @JsonProperty("birthDate")
-    private val _birthDate: String?,
-
-    @field:ValidEnum(enumClass = Gender::class, message = GENDER_MESSAGE)
-    @JsonProperty("gender")
-    private val _gender: String?,
-) {
-    val token: String
-        get() = _token!!
-    val nick: String
-        get() = _nick!!
-    val name: String?
-        get() = _name
-    val birthDate: LocalDate?
-        get() = _birthDate?.toLocalDate()
-    val gender: Gender?
-        get() = _gender?.let { Gender.valueOf(it) }
-
-    private fun String.toLocalDate(): LocalDate =
-        LocalDate.parse(this, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-}
-
-/**
 data class LoginDto(
     @field:NotBlank
     @JsonProperty("userId")
@@ -179,16 +97,6 @@ data class LoginDto(
     val password: String
         get() = _password!!
 }
-*/
-
-data class TokenForOauth2Dto(
-    @field:NotBlank
-    @JsonProperty("token")
-    private val _token: String?
-) {
-    val token: String
-        get() = _token!!
-}
 
 data class TokenRefreshDto(
     @field:NotBlank
@@ -202,13 +110,8 @@ data class TokenRefreshDto(
 data class MemberDtoResponse(
     val id: Long = 0,
     val userId: String = "",
-    val email: String = "",
-    val nick: String = "",
-    val name: String? = "",
+    val name: String = "",
     val birthDate: String? = "",
     val gender: String? = "",
-    val imageUrl: String? = "",
-    val socialType: String? = "",
-    val socialId: String? = "",
-    val socialNick: String? = "",
+    val email: String = "",
 )

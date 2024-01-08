@@ -29,7 +29,7 @@ class BrowserInfo {
         }
 
         ipAddress = ipAddress ?: ""
-        return ipAddress.split(",")[0]
+        return ipAddress
     }
 
     private fun getClientOS(uAgent: String): String {
