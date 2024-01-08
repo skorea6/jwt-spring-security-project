@@ -1,7 +1,6 @@
 package com.example.demo.common.exception
 
 import com.example.demo.common.dto.BaseResponse
-import com.example.demo.common.log.logger
 import com.example.demo.common.status.ResultCode
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.MalformedJwtException
@@ -41,6 +40,11 @@ class CustomExceptionHandler {
 
     @ExceptionHandler(InvalidInputException::class)
     protected fun invalidInputException(ex: InvalidInputException): ResponseEntity<BaseResponse<String>> {
+        return ResponseEntity(BaseResponse(statusCode = ResultCode.BAD_REQUEST.statusCode, statusMessage = ex.message), HttpStatus.BAD_REQUEST)
+    }
+
+    @ExceptionHandler(IllegalArgumentException::class)
+    protected fun illegalArgumentException(ex: IllegalArgumentException): ResponseEntity<BaseResponse<String>> {
         return ResponseEntity(BaseResponse(statusCode = ResultCode.BAD_REQUEST.statusCode, statusMessage = ex.message), HttpStatus.BAD_REQUEST)
     }
 

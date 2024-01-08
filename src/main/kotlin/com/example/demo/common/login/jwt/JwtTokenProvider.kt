@@ -1,6 +1,8 @@
-package com.example.demo.common.authority
+package com.example.demo.common.login.jwt
 
-import com.example.demo.common.dto.CustomUser
+import com.example.demo.common.dto.CustomPrincipal
+import com.example.demo.common.login.TokenInfo
+import com.example.demo.member.entity.Member
 import io.jsonwebtoken.*
 import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
@@ -11,10 +13,10 @@ import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.stereotype.Component
 import java.util.*
-import kotlin.RuntimeException
 
-const val ACCESS_EXPIRATION_MILLISECONDS: Long = 1000 * 60 * 10 // 60 * 60 (1시간)
-const val REFRESH_EXPIRATION_MILLISECONDS: Long = 1000 * 60 * 20 // 60 * 60 * 24 * 30 (30일)
+const val ACCESS_EXPIRATION_MILLISECONDS: Long = 1000 * 60 * 10 // 60 * 30 (30분)
+const val REFRESH_EXPIRATION_MILLISECONDS: Long = 1000 * 60 * 20 // 60 * 60 * 24 * 30 * 3 (30일 * 3)
+const val REMAIN_REFRESH_EXPIRATION_MILLISECONDS: Long = 1000 * 60 * 5 // 60 * 60 * 24 * 30 (30일 * 1)
 
 @Component
 class JwtTokenProvider {
@@ -28,13 +30,26 @@ class JwtTokenProvider {
     private val refreshKey by lazy { Keys.hmacShaKeyFor(Decoders.BASE64.decode(refreshSecretKey)) }
 
     /**
-     * Token 생성
+     * Token 생성 [일반 로그인]
      */
     fun createToken(authentication: Authentication): TokenInfo {
-        val authorities: String = authentication
+        val customPrincipal = authentication.principal as CustomPrincipal
+        val authorities: String = customPrincipal
             .authorities
             .joinToString(",", transform = GrantedAuthority::getAuthority)
 
+        return createTokenInfo(customPrincipal.name, customPrincipal.email, customPrincipal.nick, authorities)
+    }
+
+    /**
+     * Token 생성 [Oauth2 전용]
+     */
+    fun createTokenForOauth2(member: Member): TokenInfo {
+        val authorities: String = member.memberRole!!.joinToString(",") { "ROLE_${it.role}" }
+        return createTokenInfo(member.userId, member.email, member.nick, authorities)
+    }
+
+    private fun createTokenInfo(userId: String, email: String, nick: String, authorities: String): TokenInfo {
         val now = Date()
         val accessExpiration = Date(now.time + ACCESS_EXPIRATION_MILLISECONDS)
         val refreshExpiration = Date(now.time + REFRESH_EXPIRATION_MILLISECONDS)
@@ -42,7 +57,9 @@ class JwtTokenProvider {
         // Access Token
         val accessToken = Jwts
             .builder()
-            .setSubject(authentication.name)
+            .setSubject(userId)
+            .claim("email", email)
+            .claim("nick", nick)
             .claim("auth", authorities)
             .setIssuedAt(now)
             .setExpiration(accessExpiration)
@@ -52,14 +69,16 @@ class JwtTokenProvider {
         // Refresh Token
         val refreshToken = Jwts
             .builder()
-            .setSubject(authentication.name)
+            .setSubject(userId)
+            .claim("email", email)
+            .claim("nick", nick)
             .claim("auth", authorities)
             .setIssuedAt(now)
             .setExpiration(refreshExpiration)
             .signWith(refreshKey, SignatureAlgorithm.HS256)
             .compact()
 
-        return TokenInfo(authentication.name, "Bearer", accessToken, refreshToken)
+        return TokenInfo(userId, "Bearer", accessToken, refreshToken)
     }
 
     /**
@@ -68,16 +87,16 @@ class JwtTokenProvider {
     fun getAuthentication(token: String): Authentication {
         val claims: Claims = getAccessTokenClaims(token)
 
+        val email = claims["email"] ?: throw RuntimeException("잘못된 토큰입니다.")
+        val nick = claims["nick"] ?: throw RuntimeException("잘못된 토큰입니다.")
         val auth = claims["auth"] ?: throw RuntimeException("잘못된 토큰입니다.")
-//        val userId = claims["userId"] ?: throw RuntimeException("잘못된 토큰입니다.")
 
         // 권한 정보 추출
         val authorities: Collection<GrantedAuthority> = (auth as String)
             .split(",")
             .map { SimpleGrantedAuthority(it) }
 
-        val principal = CustomUser(claims.subject, "", authorities)
-//        val principal = PrincipalDetails(member = Member())
+        val principal = CustomPrincipal(claims.subject, nick as String, email as String, null, authorities)
         return UsernamePasswordAuthenticationToken(principal, "", authorities)
     }
 
@@ -121,18 +140,33 @@ class JwtTokenProvider {
             val newAccessToken: String = Jwts
                 .builder()
                 .setSubject(refreshClaims.subject)
+                .claim("email", refreshClaims["email"])
+                .claim("nick", refreshClaims["nick"])
                 .claim("auth", refreshClaims["auth"])
                 .setIssuedAt(now)
                 .setExpiration(Date(now.time + ACCESS_EXPIRATION_MILLISECONDS))
                 .signWith(accessKey, SignatureAlgorithm.HS256)
                 .compact()
 
+            /**
+             * refresh 토큰 만료시간 정책
+             * - 남은 만료 기간 VALIDATE_REMAIN_EXPIRATION_MILLISECONDS 미만시에만 현재 날짜로부터 REFRESH_EXPIRATION_MILLISECONDS 연장
+             * - 남은 만료 기간 VALIDATE_REMAIN_EXPIRATION_MILLISECONDS 이상일시에는 이전 만료 시간 그대로
+             */
+            var newRefreshExpiration: Long = now.time + REFRESH_EXPIRATION_MILLISECONDS
+            val prevRefreshExpiration: Long = refreshClaims.expiration.time
+            if(prevRefreshExpiration - now.time > REMAIN_REFRESH_EXPIRATION_MILLISECONDS){ // 이전 만료 시간 그대로
+                newRefreshExpiration = prevRefreshExpiration
+            }
+
             val newRefreshToken: String = Jwts
                 .builder()
                 .setSubject(refreshClaims.subject)
+                .claim("email", refreshClaims["email"])
+                .claim("nick", refreshClaims["nick"])
                 .claim("auth", refreshClaims["auth"])
                 .setIssuedAt(now)
-                .setExpiration(Date(now.time + REFRESH_EXPIRATION_MILLISECONDS))
+                .setExpiration(Date(newRefreshExpiration))
                 .signWith(refreshKey, SignatureAlgorithm.HS256)
                 .compact()
 
