@@ -1,4 +1,4 @@
-# 스프링에서 JWT 사용해보기 with Kotlin
+# 스프링 시큐리티에서 JWT 사용해보기 with Kotlin
 
 ## 구현 환경
 - Kotlin
