@@ -40,7 +40,7 @@ class CustomExceptionHandler {
 
     @ExceptionHandler(InvalidInputException::class)
     protected fun invalidInputException(ex: InvalidInputException): ResponseEntity<BaseResponse<String>> {
-        return ResponseEntity(BaseResponse(statusCode = ResultCode.BAD_REQUEST.statusCode, statusMessage = ex.message), HttpStatus.BAD_REQUEST)
+        return ResponseEntity(BaseResponse(statusCode = ResultCode.BAD_REQUEST.statusCode, statusMessage = ex.fieldName + " : " + ex.message), HttpStatus.BAD_REQUEST)
     }
 
     @ExceptionHandler(IllegalArgumentException::class)
