@@ -38,3 +38,5 @@ out/
 
 src/main/resources/application-secret.yml
 src/main/resources/application-prod.yml
+
+.DS_Store
