@@ -14,8 +14,8 @@ spring:
     throw-exception-if-no-handler-found: 'true'
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/study
-    username: root
+    url: url
+    username: username
     password:
   jpa:
     open-in-view: true
@@ -81,5 +81,9 @@ logging:
 #        security:
 #          oauth2: debug
 jwt:
-  access_secret: DadFufN4Oui8Bfv3ScFj6R9fyJ9hD45E6AGFsXgFsRhT4YSdSb
-  refresh_secret: 2X2N7NQvCJyvQUSK3nnvsuRmVC7NA4XaydaWcYsmGFzTcrYmMN
+  access_secret: access_secret
+  refresh_secret: refresh_secret
+aws:
+  ses:
+    access_key: access_key
+    secret_key: secret_key
