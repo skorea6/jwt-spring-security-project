@@ -1,2 +1,11 @@
 server:
   port: 8080
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/study
+    username: root
+    password:
+jwt:
+  access_secret: DadFufN4Oui8Bfv3ScFj6R9fyJ9hD45E6AGFsXgFsRhT4YSdSb
+  refresh_secret: 2X2N7NQvCJyvQUSK3nnvsuRmVC7NA4XaydaWcYsmGFzTcrYmMN
