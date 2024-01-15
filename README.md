@@ -38,6 +38,8 @@
   - 관련 블로그 포스팅 작성: [스프링에서 Redis 캐시 사용하기](https://skorea6.tistory.com/entry/Kotlin-%EC%8A%A4%ED%94%84%EB%A7%81%EC%97%90%EC%84%9C-Redis-%EC%BA%90%EC%8B%9C-%EC%82%AC%EC%9A%A9%ED%95%98%EA%B8%B0)
 
 - Auditing (생성자, 생성일, 수정자, 수정일) 추가 및 테스트
+  - 관련 블로그 포스팅 작성: [스프링 Data JPA: Auditing 적용 방법](https://skorea6.tistory.com/entry/%EC%8A%A4%ED%94%84%EB%A7%81-Data-JPA-Auditing-%EC%A0%81%EC%9A%A9-%EB%B0%A9%EB%B2%95-Kotlin)
+
 - API Exception Handler 구현
   - 관련 블로그 포스팅 작성: [스프링 API 예외처리 방법 : @RestControllerAdvice](https://skorea6.tistory.com/entry/%EC%8A%A4%ED%94%84%EB%A7%81-API-%EC%98%88%EC%99%B8%EC%B2%98%EB%A6%AC-%EB%B0%A9%EB%B2%95-RestControllerAdvice-Kotlin)
 - 지속적인 리펙토링, 최적화
