@@ -35,7 +35,7 @@ class CustomExceptionHandler {
 //        }
         val error = ex.bindingResult.allErrors[0]
 
-        return ResponseEntity(BaseResponse(statusCode = ResultCode.BAD_REQUEST.statusCode, statusMessage = (error as FieldError).field + ": " + error.defaultMessage), HttpStatus.BAD_REQUEST)
+        return ResponseEntity(BaseResponse(statusCode = ResultCode.BAD_REQUEST.statusCode, statusMessage = (error as FieldError).field.replaceFirst("_", "") + ": " + error.defaultMessage), HttpStatus.BAD_REQUEST)
     }
 
     @ExceptionHandler(InvalidInputException::class)
