@@ -22,7 +22,7 @@ class CustomUsernamePasswordAuthenticationFilter(
 
     @Throws(AuthenticationException::class, IOException::class)
     override fun attemptAuthentication(request: HttpServletRequest, response: HttpServletResponse): Authentication {
-        if (request.contentType == null || request.contentType != CONTENT_TYPE) {
+        if (request.contentType == null || CONTENT_TYPE !in request.contentType) {
             throw AuthenticationServiceException("Authentication Content-Type not supported: " + request.contentType)
         }
 
@@ -49,7 +49,7 @@ class CustomUsernamePasswordAuthenticationFilter(
         }
 //        request.setAttribute("userId", userId)
 
-        val checkLoginAttempt: Boolean = memberService.checkLoginAttempt(request, userId) // 로그인 횟수 제한
+        val checkLoginAttempt: Boolean = memberService.checkLoginAttempt(request, userId, 15) // 최대 15번으로 로그인 횟수 제한
         if(!checkLoginAttempt){
             throw AuthenticationServiceException("너무 많은 로그인 시도를 하였습니다. 잠시 후에 시도해주세요.")
         }
