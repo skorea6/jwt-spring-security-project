@@ -61,7 +61,7 @@ class Member(
     @Enumerated(EnumType.STRING)
     var gender: Gender? = null,
 
-    ): AuditingFields() {
+): AuditingFields() {
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "member", cascade = [CascadeType.ALL], targetEntity = MemberRole::class)
     var memberRole: List<MemberRole>? = mutableListOf()
 
