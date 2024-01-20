@@ -24,7 +24,7 @@ private const val NAME_MESSAGE = "영문, 한글만 가능하며, 1~20자리로 
 private const val BIRTH_DATE_MESSAGE = "날짜 형식(YYYY-MM-DD)을 확인해주세요."
 private const val GENDER_MESSAGE = "MAN 이나 WOMAN 중 하나를 선택해주세요."
 
-data class MemberDtoRequest(
+data class MemberSignUpDtoRequest(
     var id: Long?,
 
     @field:NotBlank
@@ -55,9 +55,8 @@ data class MemberDtoRequest(
     private val _gender: String?,
 
     @field:NotBlank
-    @field:Email
-    @JsonProperty("email")
-    private val _email: String?,
+    @JsonProperty("emailVerificationToken")
+    private val _emailVerificationToken: String?,
 ) {
     val userId: String
         get() = _userId!!
@@ -71,13 +70,13 @@ data class MemberDtoRequest(
         get() = _birthDate?.toLocalDate()
     val gender: Gender?
         get() = _gender?.let { Gender.valueOf(it) }
-    val email: String
-        get() = _email!!
+    val emailVerificationToken: String
+        get() = _emailVerificationToken!!
 
     private fun String.toLocalDate(): LocalDate =
         LocalDate.parse(this, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 
-    fun toEntity(): Member =
+    fun toEntity(email: String): Member =
         Member(
             id = id,
             userId = userId,
@@ -90,11 +89,7 @@ data class MemberDtoRequest(
         )
 }
 
-data class MemberUpdateDtoRequest(
-    @field:Pattern(regexp = PASSWORD_PATTERN, message = PASSWORD_MESSAGE)
-    @JsonProperty("password")
-    private val _password: String?,
-
+data class MemberInfoUpdateDtoRequest(
     @field:NotBlank
     @field:Pattern(regexp = NICK_PATTERN, message = NICK_MESSAGE)
     @JsonProperty("nick")
@@ -112,8 +107,6 @@ data class MemberUpdateDtoRequest(
     @JsonProperty("gender")
     private val _gender: String?,
 ) {
-    val password: String?
-        get() = _password
     val nick: String
         get() = _nick!!
     val name: String?
@@ -125,6 +118,42 @@ data class MemberUpdateDtoRequest(
 
     private fun String.toLocalDate(): LocalDate =
         LocalDate.parse(this, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+}
+
+data class MemberPasswordUpdateDtoRequest(
+    @field:NotBlank
+    @field:Pattern(regexp = PASSWORD_PATTERN, message = PASSWORD_MESSAGE)
+    @JsonProperty("currentPassword")
+    private val _currentPassword: String?,
+
+    @field:NotBlank
+    @field:Pattern(regexp = PASSWORD_PATTERN, message = PASSWORD_MESSAGE)
+    @JsonProperty("password")
+    private val _password: String?
+) {
+    val currentPassword: String
+        get() = _currentPassword!!
+
+    val password: String
+        get() = _password!!
+}
+
+data class MemberEmailUpdateDtoRequest(
+    @field:NotBlank
+    @field:Pattern(regexp = PASSWORD_PATTERN, message = PASSWORD_MESSAGE)
+    @JsonProperty("currentPassword")
+    private val _currentPassword: String?,
+
+    @field:NotBlank
+    @field:Email
+    @JsonProperty("email")
+    private val _email: String?
+) {
+    val currentPassword: String
+        get() = _currentPassword!!
+
+    val email: String
+        get() = _email!!
 }
 
 data class MemberDtoForOauth2Request(
@@ -163,6 +192,18 @@ data class MemberDtoForOauth2Request(
     private fun String.toLocalDate(): LocalDate =
         LocalDate.parse(this, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 }
+
+
+data class findUserIdByEmailDto(
+    @field:NotBlank
+    @field:Email
+    @JsonProperty("email")
+    private val _email: String?
+){
+    val email: String
+        get() = _email!!
+}
+
 
 /**
 data class LoginDto(
@@ -212,3 +253,29 @@ data class MemberDtoResponse(
     val socialId: String? = "",
     val socialNick: String? = "",
 )
+
+data class SignUpVerificationSendEmailDtoRequest(
+    @field:NotBlank
+    @field:Email
+    @JsonProperty("email")
+    private val _email: String?
+){
+    val email: String
+        get() = _email!!
+}
+
+data class VerificationCheckEmailDtoRequest(
+    @field:NotBlank
+    @JsonProperty("token")
+    private val _token: String?,
+
+    @field:NotBlank
+    @JsonProperty("verificationNumber")
+    private val _verificationNumber: String?
+){
+    val token: String
+        get() = _token!!
+
+    val verificationNumber: String
+        get() = _verificationNumber!!
+}

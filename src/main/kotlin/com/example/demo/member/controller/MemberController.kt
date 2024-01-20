@@ -3,6 +3,7 @@ package com.example.demo.member.controller
 import com.example.demo.common.dto.BaseResponse
 import com.example.demo.common.dto.CustomPrincipal
 import com.example.demo.common.login.TokenInfo
+import com.example.demo.common.redis.dto.EmailVerificationDtoResponse
 import com.example.demo.common.redis.dto.RefreshTokenDeleteDto
 import com.example.demo.common.redis.dto.RefreshTokenInfoDtoResponse
 import com.example.demo.member.dto.*
@@ -21,8 +22,26 @@ class MemberController(
      * 회원가입
      */
     @PostMapping("/signup")
-    fun signUp(@RequestBody @Valid memberDtoRequest: MemberDtoRequest): BaseResponse<Unit> {
-        val resultMsg: String = memberService.signUp(memberDtoRequest)
+    fun signUp(@RequestBody @Valid memberSignUpDtoRequest: MemberSignUpDtoRequest): BaseResponse<Unit> {
+        val resultMsg: String = memberService.signUp(memberSignUpDtoRequest)
+        return BaseResponse(statusMessage = resultMsg)
+    }
+
+    /**
+     * 회원가입 - 이메일 인증번호 발송
+     */
+    @PostMapping("/signup/verification/email/send")
+    fun signUpVerificationSendEmail(@RequestBody @Valid signUpVerificationSendEmailDtoRequest: SignUpVerificationSendEmailDtoRequest, request: HttpServletRequest): BaseResponse<EmailVerificationDtoResponse> {
+        val emailVerificationDtoResponse: EmailVerificationDtoResponse = memberService.signUpVerificationSendEmail(request, signUpVerificationSendEmailDtoRequest)
+        return BaseResponse(data = emailVerificationDtoResponse)
+    }
+
+    /**
+     * 회원가입 - 이메일 인증번호 확인
+     */
+    @PostMapping("/signup/verification/email/check")
+    fun signUpVerificationCheckEmail(@RequestBody @Valid verificationCheckEmailDtoRequest: VerificationCheckEmailDtoRequest): BaseResponse<Unit> {
+        val resultMsg: String = memberService.signUpVerificationCheckEmail(verificationCheckEmailDtoRequest)
         return BaseResponse(statusMessage = resultMsg)
     }
 
@@ -38,7 +57,7 @@ class MemberController(
     /**
      * OAuth2 회원가입 전 - 회원 정보 가져오기
      */
-    @GetMapping("/signup/oauth2/info")
+    @PostMapping("/signup/oauth2/info")
     fun memberInfoBeforeSignUpForOauth2(@RequestBody @Valid tokenForOauth2Dto: TokenForOauth2Dto): BaseResponse<MemberDtoResponse> {
         val memberDtoResponse: MemberDtoResponse = memberService.memberInfoBeforeSignUpForOauth2(tokenForOauth2Dto)
         return BaseResponse(data = memberDtoResponse)
@@ -79,8 +98,7 @@ class MemberController(
      */
     @GetMapping("/token/refresh/list")
     fun getRefreshTokenList(): BaseResponse<List<RefreshTokenInfoDtoResponse>> {
-        val userId = (SecurityContextHolder.getContext().authentication.principal as CustomPrincipal).username
-        val response = memberService.getRefreshTokenList(userId)
+        val response = memberService.getRefreshTokenList(getMemberUserId())
         return BaseResponse(data = response)
     }
 
@@ -89,8 +107,7 @@ class MemberController(
      */
     @PostMapping("/token/refresh/delete")
     fun deleteRefreshToken(@RequestBody @Valid refreshTokenDeleteDto: RefreshTokenDeleteDto): BaseResponse<Unit> {
-        val userId = (SecurityContextHolder.getContext().authentication.principal as CustomPrincipal).username
-        val resultMsg: String = memberService.deleteRefreshToken(userId, refreshTokenDeleteDto.secret)
+        val resultMsg: String = memberService.deleteRefreshToken(getMemberUserId(), refreshTokenDeleteDto.secret)
         return BaseResponse(statusMessage = resultMsg)
     }
 
@@ -100,8 +117,7 @@ class MemberController(
      */
     @GetMapping("/token/refresh/logout")
     fun logoutRefreshToken(): BaseResponse<Unit> {
-        val userId = (SecurityContextHolder.getContext().authentication.principal as CustomPrincipal).username
-        memberService.deleteAllRefreshToken(userId)
+        memberService.deleteAllRefreshToken(getMemberUserId())
         return BaseResponse()
     }
 
@@ -110,18 +126,50 @@ class MemberController(
      */
     @GetMapping("/info")
     fun searchMyInfo(): BaseResponse<MemberDtoResponse> {
-        val userId = (SecurityContextHolder.getContext().authentication.principal as CustomPrincipal).username
-        val response = memberService.searchMyInfo(userId)
+        val response = memberService.searchMyInfo(getMemberUserId())
         return BaseResponse(data = response)
     }
 
     /**
-     * 내 정보 저장
+     * 내 정보 업데이트
      */
-    @PutMapping("/info")
-    fun updateMyInfo(@RequestBody @Valid memberUpdateDtoRequest: MemberUpdateDtoRequest): BaseResponse<Unit> {
-        val userId = (SecurityContextHolder.getContext().authentication.principal as CustomPrincipal).username
-        val resultMsg: String = memberService.updateMyInfo(userId, memberUpdateDtoRequest)
+    @PostMapping("/update")
+    fun updateMemberInfo(@RequestBody @Valid memberInfoUpdateDtoRequest: MemberInfoUpdateDtoRequest): BaseResponse<Unit> {
+        val resultMsg: String = memberService.updateMemberInfo(getMemberUserId(), memberInfoUpdateDtoRequest)
         return BaseResponse(statusMessage = resultMsg)
+    }
+
+    /**
+     * 비밀번호 업데이트
+     */
+    @PostMapping("/update/password")
+    fun updateMemberPassword(@RequestBody @Valid memberPasswordUpdateDtoRequest: MemberPasswordUpdateDtoRequest): BaseResponse<Unit> {
+        val resultMsg: String = memberService.updateMemberPassword(getMemberUserId(), memberPasswordUpdateDtoRequest)
+        return BaseResponse(statusMessage = resultMsg)
+    }
+
+    /**
+     * 이메일 업데이트 - 이메일 전송
+     */
+    @PostMapping("/update/email")
+    fun updateMemberEmailSendEmail(@RequestBody @Valid memberEmailUpdateDtoRequest: MemberEmailUpdateDtoRequest, request: HttpServletRequest): BaseResponse<EmailVerificationDtoResponse> {
+        val emailVerificationDtoResponse: EmailVerificationDtoResponse =
+            memberService.updateMemberEmailSendEmail(request, getMemberUserId(), memberEmailUpdateDtoRequest)
+        return BaseResponse(data = emailVerificationDtoResponse)
+    }
+
+    /**
+     * 이메일 업데이트 - 이메일 확인
+     */
+    @PostMapping("/update/email/check")
+    fun updateMemberEmailCheckEmail(@RequestBody @Valid verificationCheckEmailDtoRequest: VerificationCheckEmailDtoRequest, request: HttpServletRequest): BaseResponse<Unit> {
+        val response: String = memberService.updateMemberEmailCheckEmail(request, getMemberUserId(), verificationCheckEmailDtoRequest)
+        return BaseResponse(statusMessage = response)
+    }
+
+
+    // 유저 아이디 추출 - Spring Security
+    private fun getMemberUserId(): String {
+        return (SecurityContextHolder.getContext().authentication.principal as CustomPrincipal).username
     }
 }

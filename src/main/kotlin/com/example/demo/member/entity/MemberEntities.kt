@@ -26,7 +26,7 @@ class Member(
     val userId: String,
 
     @Column(nullable = false, length = 100)
-    val email: String,
+    var email: String,
 
     @Column(length = 100)
     var password: String,
