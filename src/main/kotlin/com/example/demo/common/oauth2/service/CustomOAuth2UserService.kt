@@ -50,6 +50,12 @@ class CustomOAuth2UserService(
         val extractAttributes = OAuthAttributes.of(socialType, userNameAttributeName, attributes)
         val createdMember: Member = getUser(extractAttributes, socialType) // getUser() 메소드로 User 객체 생성 후 반환
 
+        // 이미 가입된 상태일 경우 : 멤버 이메일과 현재 소셜 이메일이 다를 경우 업데이트 필요.
+        if(createdMember.email != extractAttributes.oauth2UserInfo.email){
+            createdMember.email = extractAttributes.oauth2UserInfo.email
+            memberRepository.save(createdMember)
+        }
+
 //        print(createdMember.userId)
 //        print(createdMember.memberRole!!.joinToString(",") { "ROLE_${it.role}" })
 
