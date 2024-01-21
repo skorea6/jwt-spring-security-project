@@ -84,6 +84,43 @@ class MemberController(
     }
 
     /**
+     * 아이디 찾기 (이메일로 찾기)
+     */
+    @PostMapping("/find/user-id/by-email")
+    fun findUserIdByEmail(@RequestBody @Valid findUserIdByEmailDto: FindUserIdByEmailDto, request: HttpServletRequest): BaseResponse<Unit> {
+        val resultMsg: String = memberService.findUserIdByEmail(request, findUserIdByEmailDto)
+        return BaseResponse(statusMessage = resultMsg)
+    }
+
+    /**
+     * 비밀번호 찾기 - 비밀번호 변경
+     */
+    @PostMapping("/find/password/by-email/reset")
+    fun findPasswordByEmailResetPassword(@RequestBody @Valid findPasswordByEmailResetPasswordDtoRequest: FindPasswordByEmailResetPasswordDtoRequest): BaseResponse<Unit> {
+        val resultMsg: String = memberService.findPasswordByEmailResetPassword(findPasswordByEmailResetPasswordDtoRequest)
+        return BaseResponse(statusMessage = resultMsg)
+    }
+
+    /**
+     * 비밀번호 찾기 - 이메일 인증번호 발송
+     */
+    @PostMapping("/find/password/by-email/email/send")
+    fun findPasswordByEmailSendEmail(@RequestBody @Valid findPasswordByEmailSendEmailDtoRequest: FindPasswordByEmailSendEmailDtoRequest, request: HttpServletRequest): BaseResponse<EmailVerificationDtoResponse> {
+        val emailVerificationDtoResponse: EmailVerificationDtoResponse = memberService.findPasswordByEmailSendEmail(request, findPasswordByEmailSendEmailDtoRequest)
+        return BaseResponse(data = emailVerificationDtoResponse)
+    }
+
+    /**
+     * 비밀번호 찾기 - 이메일 인증번호 확인
+     */
+    @PostMapping("/find/password/by-email/email/check")
+    fun findPasswordByEmailCheckEmail(@RequestBody @Valid verificationCheckEmailDtoRequest: VerificationCheckEmailDtoRequest): BaseResponse<Unit> {
+        val resultMsg: String = memberService.findPasswordByEmailCheckEmail(verificationCheckEmailDtoRequest)
+        return BaseResponse(statusMessage = resultMsg)
+    }
+
+
+    /**
      * Refresh 토큰을 이용하여 토큰 재발급
      */
     @PostMapping("/token/refresh/issue")

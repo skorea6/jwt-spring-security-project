@@ -43,26 +43,18 @@ class MemberService(
      */
     fun signUp(memberSignUpDtoRequest: MemberSignUpDtoRequest): String {
         // 이메일 인증 시스템
-        val findByVerificationToken: EmailVerificationDto =
-            emailVerificationRepositoryRedis.findByVerificationToken("SignUp", memberSignUpDtoRequest.emailVerificationToken)
-                ?: throw IllegalArgumentException("회원가입 시간이 초과되었습니다. 재시도해주세요.")
-
-        require(findByVerificationToken.isDone){
-            "이메일 인증이 완료되지 않았습니다."
-        }
+        val emailVerificationDto: EmailVerificationDto = validateEmailVerification("SignUp", memberSignUpDtoRequest.emailVerificationToken)
 
         checkDuplicateUserId(memberSignUpDtoRequest.userId) // userId 중복 검사
         checkDuplicateNick(memberSignUpDtoRequest.nick) // nick 중복 검사
 
-        val member: Member = memberSignUpDtoRequest.toEntity(findByVerificationToken.email)
+        val member: Member = memberSignUpDtoRequest.toEntity(emailVerificationDto.email)
         member.password = passwordEncoder.encode(member.password)
 
         memberRepository.save(member)
         memberRoleRepository.save(MemberRole(null, ROLE.MEMBER, member))
 
-        // 이메일 인증 토큰 제거
-        emailVerificationRepositoryRedis.deleteByVerificationToken("SignUp", memberSignUpDtoRequest.emailVerificationToken)
-
+        completeEmailVerification("SignUp", memberSignUpDtoRequest.emailVerificationToken) // 이메일 인증 토큰 제거
         return "회원가입이 완료되었습니다."
     }
 
@@ -151,11 +143,10 @@ class MemberService(
     /**
      * 아이디 찾기 (이메일로 찾기)
      */
-    fun findUserIdByEmail(request: HttpServletRequest, findUserIdByEmailDto: findUserIdByEmailDto): String {
+    fun findUserIdByEmail(request: HttpServletRequest, findUserIdByEmailDto: FindUserIdByEmailDto): String {
         checkEmailVerificationAttempt(request) // 일정기간 동안 이메일 최대 전송 횟수 제한 (아이피 검사)
 
-        val member: Member = memberRepository.findByEmail(findUserIdByEmailDto.email)
-            ?: throw IllegalArgumentException("해당 이메일로 가입된 계정이 없습니다.")
+        val member: Member = memberFindByEmail(findUserIdByEmailDto.email)
 
         require(member.socialId.isNullOrEmpty()){
             "'${member.socialType!!.ko}' 소셜 회원으로 가입된 계정입니다."
@@ -172,6 +163,51 @@ class MemberService(
         return "이메일이 전송 되었습니다! 이메일에서 아이디를 확인해주세요."
     }
 
+    /**
+     * 비밀번호 찾기 - 비밀번호 변경
+     */
+    fun findPasswordByEmailResetPassword(findPasswordByEmailResetPasswordDtoRequest: FindPasswordByEmailResetPasswordDtoRequest): String {
+        // 이메일 인증 시스템
+        val emailVerificationDto: EmailVerificationDto = validateEmailVerification("FindPassword", findPasswordByEmailResetPasswordDtoRequest.emailVerificationToken)
+        val member: Member = memberFindByEmail(emailVerificationDto.email)
+
+        member.password = passwordEncoder.encode(findPasswordByEmailResetPasswordDtoRequest.password)
+        memberRepository.save(member)
+
+        deleteAllRefreshToken(member.userId) // 모든 기기 로그아웃
+        completeEmailVerification("FindPassword", findPasswordByEmailResetPasswordDtoRequest.emailVerificationToken)
+
+        return "비밀번호 변경이 완료되었습니다."
+    }
+
+    /**
+     * 비밀번호 찾기 - 이메일 인증번호 발송
+     */
+    fun findPasswordByEmailSendEmail(request: HttpServletRequest, findPasswordByEmailSendEmailDtoRequest: FindPasswordByEmailSendEmailDtoRequest): EmailVerificationDtoResponse {
+        val member: Member = memberFindByUserId(findPasswordByEmailSendEmailDtoRequest.userId)
+
+        require(member.socialId.isNullOrEmpty()){
+            "'${member.socialType!!.ko}' 소셜 회원으로 가입된 계정입니다."
+        }
+
+        return verificationSendEmail(
+            "FindPassword",
+            findPasswordByEmailSendEmailDtoRequest.email,
+            "비밀번호 찾기를 위한 인증번호 안내",
+            "${member.userId}님, 비밀번호 찾기를 위해서 아래 인증코드를 입력해주세요.",
+            request
+        )
+    }
+
+    /**
+     * 비밀번호 찾기 - 이메일 인증번호 확인
+     */
+    fun findPasswordByEmailCheckEmail(verificationCheckEmailDtoRequest: VerificationCheckEmailDtoRequest): String {
+        val emailVerificationDto: EmailVerificationDto = verificationCheckEmail("FindPassword", verificationCheckEmailDtoRequest)
+        emailVerificationRepositoryRedis.save("FindPassword", emailVerificationDto, 15) // 10분 타임아웃 제한
+
+        return "이메일 인증이 완료되었습니다."
+    }
 
 
     /**
@@ -272,9 +308,9 @@ class MemberService(
 
         // TODO: 프론트단에서 accessToken 쿠키 삭제 후 재로그인 과정 필요.
         member.password = passwordEncoder.encode(memberPasswordUpdateDtoRequest.password)
-        deleteAllRefreshToken(userId) // 모든 기기 로그아웃
-
         memberRepository.save(member)
+
+        deleteAllRefreshToken(userId) // 모든 기기 로그아웃
         return "수정이 완료되었습니다."
     }
 
@@ -319,6 +355,11 @@ class MemberService(
     private fun memberFindByUserId(userId: String): Member {
         return memberRepository.findByUserId(userId)
             ?: throw IllegalArgumentException("회원 아이디(${userId})가 존재하지 않는 유저입니다.")
+    }
+
+    private fun memberFindByEmail(email: String): Member {
+        return memberRepository.findByEmail(email)
+            ?: throw IllegalArgumentException("이메일로 가입된 계정이 없습니다.")
     }
 
     // [소셜 로그인이 아닐 경우에만] 현재 비밀번호가 맞는지 확인하는 로직
@@ -489,28 +530,51 @@ class MemberService(
 
     private fun verificationCheckEmail(name: String, verificationCheckEmailDtoRequest: VerificationCheckEmailDtoRequest): EmailVerificationDto {
         // 토큰을 이용하여 Redis에서 Dto 가져와서 인증번호와 동일한지 확인 후 isDone 업데이트
-        val findByVerificationToken =
+        val emailVerificationDto =
             emailVerificationRepositoryRedis.findByVerificationToken(
                 name,
                 verificationCheckEmailDtoRequest.token
             )
                 ?: throw IllegalArgumentException("이메일 인증 시간이 초과되었습니다. 재시도해주세요.")
 
-        require(!findByVerificationToken.isDone){
+        require(!emailVerificationDto.isDone){
             "이미 이메일 인증이 완료된 상태입니다."
         }
 
-        require(findByVerificationToken.attemptCount <= 10){
+        require(emailVerificationDto.attemptCount <= 10){
             "너무 많은 시도를 하였습니다. 처음부터 재시도해주세요."
         }
 
-        if (findByVerificationToken.verificationNumber != verificationCheckEmailDtoRequest.verificationNumber) {
-            findByVerificationToken.attemptCount++
-            emailVerificationRepositoryRedis.save(name, findByVerificationToken, 30)
+        if (emailVerificationDto.verificationNumber != verificationCheckEmailDtoRequest.verificationNumber) {
+            emailVerificationDto.attemptCount++
+            emailVerificationRepositoryRedis.save(name, emailVerificationDto, 30)
             throw IllegalArgumentException("인증번호가 올바르지 않습니다.")
         }
 
-        findByVerificationToken.isDone = true
-        return findByVerificationToken
+        emailVerificationDto.isDone = true
+        return emailVerificationDto
+    }
+
+    // 이메일 토큰 확인하기
+    private fun validateEmailVerification(name: String, emailVerificationToken: String): EmailVerificationDto {
+        val emailVerificationDto: EmailVerificationDto =
+            emailVerificationRepositoryRedis.findByVerificationToken(
+                name,
+                emailVerificationToken
+            )
+                ?: throw IllegalArgumentException("시간이 초과되었습니다. 재시도해주세요.")
+
+        require(emailVerificationDto.isDone) {
+            "이메일 인증이 완료되지 않았습니다."
+        }
+        return emailVerificationDto
+    }
+
+    // 이메일 인증을 모두 성공한 이후
+    private fun completeEmailVerification(name: String, emailVerificationToken: String) {
+        emailVerificationRepositoryRedis.deleteByVerificationToken(
+            name,
+            emailVerificationToken
+        )
     }
 }

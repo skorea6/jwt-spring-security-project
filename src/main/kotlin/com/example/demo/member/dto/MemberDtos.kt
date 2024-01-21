@@ -193,13 +193,46 @@ data class MemberDtoForOauth2Request(
         LocalDate.parse(this, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 }
 
-
-data class findUserIdByEmailDto(
+data class FindUserIdByEmailDto(
     @field:NotBlank
     @field:Email
     @JsonProperty("email")
     private val _email: String?
 ){
+    val email: String
+        get() = _email!!
+}
+
+data class FindPasswordByEmailResetPasswordDtoRequest(
+    @field:NotBlank
+    @field:Pattern(regexp = PASSWORD_PATTERN, message = PASSWORD_MESSAGE)
+    @JsonProperty("password")
+    private val _password: String?,
+
+    @field:NotBlank
+    @JsonProperty("emailVerificationToken")
+    private val _emailVerificationToken: String?,
+){
+    val password: String
+        get() = _password!!
+
+    val emailVerificationToken: String
+        get() = _emailVerificationToken!!
+}
+
+data class FindPasswordByEmailSendEmailDtoRequest(
+    @field:NotBlank
+    @JsonProperty("userId")
+    private val _userId: String?,
+
+    @field:NotBlank
+    @field:Email
+    @JsonProperty("email")
+    private val _email: String?
+){
+    val userId: String
+        get() = _userId!!
+
     val email: String
         get() = _email!!
 }
