@@ -1,6 +1,5 @@
 package com.example.demo.util
 
-import com.amazonaws.AmazonClientException
 import com.amazonaws.services.simpleemail.model.*
 import com.example.demo.common.config.aws.AwsSesConfig
 import org.springframework.stereotype.Component
@@ -48,10 +47,8 @@ class MailUtil(
             val client = awsSesConfig.amazonSimpleEmailService()
             client.sendEmail(senderDto.toSendRequestDto())
         } catch (ex: Exception) {
-            throw AmazonClientException(
-                ex.message,
-                ex
-            )
+//            throw IllegalArgumentException(ex.message)
+            throw IllegalArgumentException("이메일 전송 서비스가 원활하지 않습니다.")
         }
     }
 }
