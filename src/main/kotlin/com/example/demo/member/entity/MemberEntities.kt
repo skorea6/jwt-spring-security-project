@@ -66,11 +66,11 @@ class Member(
     var memberRole: List<MemberRole>? = mutableListOf()
 
     private fun LocalDate.formatDate(): String =
-        this.format(DateTimeFormatter.ofPattern("yyyyMMdd"))
+        this.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 
     fun toDto(): MemberDtoResponse =
-        MemberDtoResponse(id!!, userId, email, nick, name, birthDate?.formatDate(), gender?.desc, imageUrl,
-            socialType?.name, socialId, socialNick)
+        MemberDtoResponse(id!!, userId, email, nick, name, birthDate?.formatDate(), gender?.name, imageUrl,
+            socialType?.name, !socialId.isNullOrEmpty(), socialNick)
 
     fun existsMemberForSocial(socialType: SocialType?, socialId: String?, socialNick: String?, imageUrl: String?) {
         this.socialType = socialType
