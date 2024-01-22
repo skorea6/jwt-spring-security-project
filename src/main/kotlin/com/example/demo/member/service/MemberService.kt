@@ -283,14 +283,20 @@ class MemberService(
 
         if(memberInfoUpdateDtoRequest.name !=  null){
             member.name = memberInfoUpdateDtoRequest.name
+        }else{
+            member.name = null
         }
 
         if(memberInfoUpdateDtoRequest.gender != null){
             member.gender = memberInfoUpdateDtoRequest.gender
+        }else{
+            member.gender = null
         }
 
         if(memberInfoUpdateDtoRequest.birthDate != null){
             member.birthDate = memberInfoUpdateDtoRequest.birthDate
+        }else{
+            member.birthDate = null
         }
 
         memberRepository.save(member)
@@ -306,7 +312,6 @@ class MemberService(
         val member: Member = memberFindByUserId(userId)
         validatePassword(memberPasswordUpdateDtoRequest.currentPassword, member) // 현재 비밀번호가 맞는지 확인
 
-        // TODO: 프론트단에서 accessToken 쿠키 삭제 후 재로그인 과정 필요.
         member.password = passwordEncoder.encode(memberPasswordUpdateDtoRequest.password)
         memberRepository.save(member)
 
@@ -370,7 +375,7 @@ class MemberService(
         require(member.socialId.isNullOrEmpty()) {
             "소셜 로그인 회원은 이용이 불가합니다."
         }
-        require(password == passwordEncoder.encode(member.password)) {
+        require(passwordEncoder.matches(password, member.password)) {
             "현재 비밀번호가 일치하지 않습니다."
         }
     }
