@@ -122,7 +122,6 @@ data class MemberInfoUpdateDtoRequest(
 
 data class MemberPasswordUpdateDtoRequest(
     @field:NotBlank
-    @field:Pattern(regexp = PASSWORD_PATTERN, message = PASSWORD_MESSAGE)
     @JsonProperty("currentPassword")
     private val _currentPassword: String?,
 
@@ -140,7 +139,6 @@ data class MemberPasswordUpdateDtoRequest(
 
 data class MemberEmailUpdateDtoRequest(
     @field:NotBlank
-    @field:Pattern(regexp = PASSWORD_PATTERN, message = PASSWORD_MESSAGE)
     @JsonProperty("currentPassword")
     private val _currentPassword: String?,
 
@@ -283,7 +281,7 @@ data class MemberDtoResponse(
     val gender: String? = "",
     val imageUrl: String? = "",
     val socialType: String? = "",
-    val socialId: String? = "",
+    val isSocial: Boolean? = false,
     val socialNick: String? = "",
 )
 
