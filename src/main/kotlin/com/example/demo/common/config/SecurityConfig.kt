@@ -53,7 +53,7 @@ class SecurityConfig(
                 it
 //                    .requestMatchers(CorsUtils::isPreFlightRequest)
 //                    .permitAll()
-                    .requestMatchers("/api/member/signup", "/api/member/signup/**", "/api/member/login/oauth2", "/api/member/login", "/api/member/token/refresh/issue")
+                    .requestMatchers("/api/member/find/**", "/api/member/signup/**", "/api/member/login/oauth2", "/api/member/login", "/api/member/token/refresh/issue")
                     .anonymous()
                     .requestMatchers("/api/member/**").hasRole("MEMBER")
                     .anyRequest().permitAll()
