@@ -10,6 +10,7 @@ interface MemberRepository : JpaRepository<Member, Long> {
 
     fun findByNick(nick: String): Member?
     fun findByEmail(email: String): Member?
+    fun findByUserIdAndEmail(userId: String, email: String): Member?
     fun findByUserIdAndIsSocialGuest(userId: String, isSocialGuest: Boolean): Member?
     fun findBySocialTypeAndSocialId(socialType: SocialType, socialId: String): Member?
     fun deleteByEmail(email: String)

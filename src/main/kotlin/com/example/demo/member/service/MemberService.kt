@@ -62,6 +62,7 @@ class MemberService(
      * 회원가입 - 이메일 인증번호 발송
      */
     fun signUpVerificationSendEmail(request: HttpServletRequest, signUpVerificationSendEmailDtoRequest: SignUpVerificationSendEmailDtoRequest): EmailVerificationDtoResponse {
+        checkDuplicateEmail(signUpVerificationSendEmailDtoRequest.email) // email 중복 검사
         return verificationSendEmail(
             "SignUp",
             signUpVerificationSendEmailDtoRequest.email,
@@ -184,7 +185,10 @@ class MemberService(
      * 비밀번호 찾기 - 이메일 인증번호 발송
      */
     fun findPasswordByEmailSendEmail(request: HttpServletRequest, findPasswordByEmailSendEmailDtoRequest: FindPasswordByEmailSendEmailDtoRequest): EmailVerificationDtoResponse {
-        val member: Member = memberFindByUserId(findPasswordByEmailSendEmailDtoRequest.userId)
+        val member: Member = memberRepository.findByUserIdAndEmail(
+            findPasswordByEmailSendEmailDtoRequest.userId,
+            findPasswordByEmailSendEmailDtoRequest.email
+        ) ?: throw IllegalArgumentException("아이디와 이메일이 일치하는 회원이 없습니다.")
 
         require(member.socialId.isNullOrEmpty()){
             "'${member.socialType!!.ko}' 소셜 회원으로 가입된 계정입니다."
@@ -211,14 +215,21 @@ class MemberService(
 
 
     /**
-     * 특정 Refresh 토큰 삭제
+     * 특정 Refresh 토큰 삭제 - 리스트에서
      */
-    fun deleteRefreshToken(userId: String, secret: String): String {
+    fun deleteRefreshTokenList(userId: String, secret: String): String {
         val deleteBySecret: Boolean = refreshTokenInfoRepositoryRedis.deleteBySecret(userId, secret)
         require(deleteBySecret){
             "찾을 수 없는 토큰입니다."
         }
         return "성공적으로 삭제되었습니다."
+    }
+
+    /**
+     * 특정 Refresh 토큰 삭제
+     */
+    fun deleteRefreshToken(refreshToken: String) {
+        refreshTokenInfoRepositoryRedis.deleteByRefreshToken(refreshToken)
     }
 
     /**
@@ -331,6 +342,8 @@ class MemberService(
             "새로운 이메일 주소가 현재 이메일 주소와 동일합니다."
         }
 
+        checkDuplicateEmail(memberEmailUpdateDtoRequest.email) // email 중복 검사
+
         return verificationSendEmail(
             "EmailUpdate",
             memberEmailUpdateDtoRequest.email,
@@ -364,7 +377,7 @@ class MemberService(
 
     private fun memberFindByEmail(email: String): Member {
         return memberRepository.findByEmail(email)
-            ?: throw IllegalArgumentException("이메일로 가입된 계정이 없습니다.")
+            ?: throw IllegalArgumentException("해당 이메일로 가입된 계정이 없습니다.")
     }
 
     // [소셜 로그인이 아닐 경우에만] 현재 비밀번호가 맞는지 확인하는 로직
@@ -510,7 +523,6 @@ class MemberService(
         request: HttpServletRequest
     ): EmailVerificationDtoResponse {
         checkEmailVerificationAttempt(request) // 일정기간 동안 이메일 최대 전송 횟수 제한 (아이피 검사)
-        checkDuplicateEmail(emailAddress) // email 중복 검사
 
         val verificationToken: String = RandomUtil().generateRandomString(32)
         val verificationNumber: String = RandomUtil().generateRandomNumber(6)

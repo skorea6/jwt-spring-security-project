@@ -47,3 +47,12 @@ data class RefreshTokenDeleteDto(
     val secret: String
         get() = _secret!!
 }
+
+data class LogoutRefreshTokenDto(
+        @field:NotBlank
+        @JsonProperty("refreshToken")
+        private val _refreshToken: String?,
+) {
+    val refreshToken: String
+        get() = _refreshToken!!
+}

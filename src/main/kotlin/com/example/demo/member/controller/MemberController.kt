@@ -4,6 +4,7 @@ import com.example.demo.common.dto.BaseResponse
 import com.example.demo.common.dto.CustomPrincipal
 import com.example.demo.common.login.TokenInfo
 import com.example.demo.common.redis.dto.EmailVerificationDtoResponse
+import com.example.demo.common.redis.dto.LogoutRefreshTokenDto
 import com.example.demo.common.redis.dto.RefreshTokenDeleteDto
 import com.example.demo.common.redis.dto.RefreshTokenInfoDtoResponse
 import com.example.demo.member.dto.*
@@ -142,18 +143,28 @@ class MemberController(
     /**
      * 특정 Refresh 토큰 제거 API
      */
-    @PostMapping("/token/refresh/delete")
-    fun deleteRefreshToken(@RequestBody @Valid refreshTokenDeleteDto: RefreshTokenDeleteDto): BaseResponse<Unit> {
-        val resultMsg: String = memberService.deleteRefreshToken(getMemberUserId(), refreshTokenDeleteDto.secret)
+    @PostMapping("/token/refresh/list/delete")
+    fun deleteRefreshTokenList(@RequestBody @Valid refreshTokenDeleteDto: RefreshTokenDeleteDto): BaseResponse<Unit> {
+        val resultMsg: String = memberService.deleteRefreshTokenList(getMemberUserId(), refreshTokenDeleteDto.secret)
         return BaseResponse(statusMessage = resultMsg)
+    }
+
+    /**
+     * 로그아웃 API
+     * 특정 Refresh 토큰 제거
+     */
+    @PostMapping("/token/refresh/logout")
+    fun logoutRefreshToken(@RequestBody @Valid logoutRefreshTokenDto: LogoutRefreshTokenDto): BaseResponse<Unit> {
+        memberService.deleteRefreshToken(logoutRefreshTokenDto.refreshToken)
+        return BaseResponse()
     }
 
     /**
      * 로그아웃 API
      * 모든 Refresh 토큰 제거
      */
-    @GetMapping("/token/refresh/logout")
-    fun logoutRefreshToken(): BaseResponse<Unit> {
+    @GetMapping("/token/refresh/logout/all")
+    fun logoutAllRefreshToken(): BaseResponse<Unit> {
         memberService.deleteAllRefreshToken(getMemberUserId())
         return BaseResponse()
     }
