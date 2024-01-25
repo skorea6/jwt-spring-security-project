@@ -70,7 +70,7 @@ class Member(
 
     fun toDto(): MemberDtoResponse =
         MemberDtoResponse(id!!, userId, email, nick, name, birthDate?.formatDate(), gender?.name, imageUrl,
-            socialType?.name, !socialId.isNullOrEmpty(), socialNick)
+            !socialId.isNullOrEmpty(), socialType?.name, socialNick)
 
     fun existsMemberForSocial(socialType: SocialType?, socialId: String?, socialNick: String?, imageUrl: String?) {
         this.socialType = socialType
