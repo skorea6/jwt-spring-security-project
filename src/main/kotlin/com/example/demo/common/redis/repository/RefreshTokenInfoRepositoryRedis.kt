@@ -1,6 +1,6 @@
 package com.example.demo.common.redis.repository
 
-import com.example.demo.common.login.jwt.REFRESH_EXPIRATION_MILLISECONDS
+import com.example.demo.common.login.jwt.JwtProperties
 import com.example.demo.common.redis.dto.RefreshTokenInfoDto
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer
@@ -15,7 +15,8 @@ import java.util.concurrent.TimeUnit
 
 @Repository
 class RefreshTokenInfoRepositoryRedis(
-    private val redisTemplate: RedisTemplate<String, RefreshTokenInfoDto>
+    private val redisTemplate: RedisTemplate<String, RefreshTokenInfoDto>,
+    private val jwtProperties: JwtProperties
 ) {
     companion object {
         private const val KEY_PREFIX = "refreshToken" // refreshToken:{userId}:{refreshToken}
@@ -28,7 +29,7 @@ class RefreshTokenInfoRepositoryRedis(
 
     fun save(refreshTokenInfoDto: RefreshTokenInfoDto) {
         val key = "$KEY_PREFIX:${refreshTokenInfoDto.userId}:${refreshTokenInfoDto.refreshToken}"
-        redisTemplate.opsForValue().set(key, refreshTokenInfoDto, REFRESH_EXPIRATION_MILLISECONDS, TimeUnit.MILLISECONDS)
+        redisTemplate.opsForValue().set(key, refreshTokenInfoDto, jwtProperties.expire.refresh, TimeUnit.MILLISECONDS)
     }
 
     fun findByRefreshToken(refreshToken: String): RefreshTokenInfoDto? {

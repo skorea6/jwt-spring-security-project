@@ -6,7 +6,6 @@ import com.example.demo.member.entity.Member
 import io.jsonwebtoken.*
 import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
@@ -14,17 +13,26 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.stereotype.Component
 import java.util.*
 
-const val ACCESS_EXPIRATION_MILLISECONDS: Long = 1000 * 60 * 10 // 60 * 30 (30분)
-const val REFRESH_EXPIRATION_MILLISECONDS: Long = 1000 * 60 * 20 // 60 * 60 * 24 * 30 * 3 (30일 * 3)
-const val REMAIN_REFRESH_EXPIRATION_MILLISECONDS: Long = 1000 * 60 * 5 // 60 * 60 * 24 * 30 (30일 * 1)
+//const val ACCESS_EXPIRATION_MILLISECONDS: Long = 1000 * 60 * 10 // 60 * 30 (30분)
+//const val REFRESH_EXPIRATION_MILLISECONDS: Long = 1000 * 60 * 20 // 60 * 60 * 24 * 30 * 3 (30일 * 3)
+//const val REMAIN_REFRESH_EXPIRATION_MILLISECONDS: Long = 1000 * 60 * 5 // 60 * 60 * 24 * 30 (30일 * 1)
 
 @Component
-class JwtTokenProvider {
-    @Value("\${jwt.access_secret}")
-    lateinit var accessSecretKey: String
+class JwtTokenProvider(
+        jwtProperties: JwtProperties
+) {
+    private val accessSecretKey = jwtProperties.accessSecret
+    private val refreshSecretKey = jwtProperties.refreshSecret
 
-    @Value("\${jwt.refresh_secret}")
-    lateinit var refreshSecretKey: String
+    private val accessExpireMilliseconds = jwtProperties.expire.access
+    private val refreshExpireMilliseconds = jwtProperties.expire.refresh
+    private val remainRefreshExpireMilliseconds = jwtProperties.expire.remainRefresh
+
+//    @Value("\${jwt.access_secret}")
+//    lateinit var accessSecretKey: String
+//
+//    @Value("\${jwt.refresh_secret}")
+//    lateinit var refreshSecretKey: String
 
     private val accessKey by lazy { Keys.hmacShaKeyFor(Decoders.BASE64.decode(accessSecretKey)) }
     private val refreshKey by lazy { Keys.hmacShaKeyFor(Decoders.BASE64.decode(refreshSecretKey)) }
@@ -51,8 +59,8 @@ class JwtTokenProvider {
 
     private fun createTokenInfo(userId: String, email: String, nick: String, authorities: String): TokenInfo {
         val now = Date()
-        val accessExpiration = Date(now.time + ACCESS_EXPIRATION_MILLISECONDS)
-        val refreshExpiration = Date(now.time + REFRESH_EXPIRATION_MILLISECONDS)
+        val accessExpiration = Date(now.time + accessExpireMilliseconds)
+        val refreshExpiration = Date(now.time + refreshExpireMilliseconds)
 
         // Access Token
         val accessToken = Jwts
@@ -144,7 +152,7 @@ class JwtTokenProvider {
                 .claim("nick", refreshClaims["nick"])
                 .claim("auth", refreshClaims["auth"])
                 .setIssuedAt(now)
-                .setExpiration(Date(now.time + ACCESS_EXPIRATION_MILLISECONDS))
+                .setExpiration(Date(now.time + accessExpireMilliseconds))
                 .signWith(accessKey, SignatureAlgorithm.HS256)
                 .compact()
 
@@ -153,9 +161,9 @@ class JwtTokenProvider {
              * - 남은 만료 기간 VALIDATE_REMAIN_EXPIRATION_MILLISECONDS 미만시에만 현재 날짜로부터 REFRESH_EXPIRATION_MILLISECONDS 연장
              * - 남은 만료 기간 VALIDATE_REMAIN_EXPIRATION_MILLISECONDS 이상일시에는 이전 만료 시간 그대로
              */
-            var newRefreshExpiration: Long = now.time + REFRESH_EXPIRATION_MILLISECONDS
+            var newRefreshExpiration: Long = now.time + refreshExpireMilliseconds
             val prevRefreshExpiration: Long = refreshClaims.expiration.time
-            if(prevRefreshExpiration - now.time > REMAIN_REFRESH_EXPIRATION_MILLISECONDS){ // 이전 만료 시간 그대로
+            if(prevRefreshExpiration - now.time > remainRefreshExpireMilliseconds){ // 이전 만료 시간 그대로
                 newRefreshExpiration = prevRefreshExpiration
             }
 
