@@ -29,8 +29,8 @@ class MemberController(
      * 회원가입 - 이메일 인증번호 발송
      */
     @PostMapping("/signup/verification/email/send")
-    fun signUpVerificationSendEmail(@RequestBody @Valid signUpVerificationSendEmailDtoRequest: SignUpVerificationSendEmailDtoRequest, request: HttpServletRequest): BaseResponse<EmailVerificationDtoResponse> {
-        val emailVerificationDtoResponse: EmailVerificationDtoResponse = memberService.signUpVerificationSendEmail(request, signUpVerificationSendEmailDtoRequest)
+    fun signUpVerificationSendEmail(@RequestBody @Valid signUpVerificationSendEmailDtoRequest: SignUpVerificationSendEmailDtoRequest): BaseResponse<EmailVerificationDtoResponse> {
+        val emailVerificationDtoResponse: EmailVerificationDtoResponse = memberService.signUpVerificationSendEmail(signUpVerificationSendEmailDtoRequest)
         return BaseResponse(data = emailVerificationDtoResponse)
     }
 
@@ -103,8 +103,8 @@ class MemberController(
      * 비밀번호 찾기 - 이메일 인증번호 발송
      */
     @PostMapping("/find/password/by-email/email/send")
-    fun findPasswordByEmailSendEmail(@RequestBody @Valid findPasswordByEmailSendEmailDtoRequest: FindPasswordByEmailSendEmailDtoRequest, request: HttpServletRequest): BaseResponse<EmailVerificationDtoResponse> {
-        val emailVerificationDtoResponse: EmailVerificationDtoResponse = memberService.findPasswordByEmailSendEmail(request, findPasswordByEmailSendEmailDtoRequest)
+    fun findPasswordByEmailSendEmail(@RequestBody @Valid findPasswordByEmailSendEmailDtoRequest: FindPasswordByEmailSendEmailDtoRequest): BaseResponse<EmailVerificationDtoResponse> {
+        val emailVerificationDtoResponse: EmailVerificationDtoResponse = memberService.findPasswordByEmailSendEmail(findPasswordByEmailSendEmailDtoRequest)
         return BaseResponse(data = emailVerificationDtoResponse)
     }
 
@@ -197,9 +197,9 @@ class MemberController(
      * 이메일 업데이트 - 이메일 전송
      */
     @PostMapping("/update/email")
-    fun updateMemberEmailSendEmail(@RequestBody @Valid memberEmailUpdateDtoRequest: MemberEmailUpdateDtoRequest, request: HttpServletRequest): BaseResponse<EmailVerificationDtoResponse> {
+    fun updateMemberEmailSendEmail(@RequestBody @Valid memberEmailUpdateDtoRequest: MemberEmailUpdateDtoRequest): BaseResponse<EmailVerificationDtoResponse> {
         val emailVerificationDtoResponse: EmailVerificationDtoResponse =
-            memberService.updateMemberEmailSendEmail(request, getMemberUserId(), memberEmailUpdateDtoRequest)
+            memberService.updateMemberEmailSendEmail(getMemberUserId(), memberEmailUpdateDtoRequest)
         return BaseResponse(data = emailVerificationDtoResponse)
     }
 

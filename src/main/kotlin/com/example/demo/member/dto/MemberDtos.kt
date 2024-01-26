@@ -147,13 +147,20 @@ data class MemberEmailUpdateDtoRequest(
     @field:NotBlank
     @field:Email
     @JsonProperty("email")
-    private val _email: String?
+    private val _email: String?,
+
+    @field:NotBlank
+    @JsonProperty("recaptchaResponse")
+    private val _recaptchaResponse: String?
 ) {
     val currentPassword: String
         get() = _currentPassword!!
 
     val email: String
         get() = _email!!
+
+    val recaptchaResponse: String
+        get() = _recaptchaResponse!!
 }
 
 data class MemberDtoForOauth2Request(
@@ -197,10 +204,17 @@ data class FindUserIdByEmailDto(
     @field:NotBlank
     @field:Email
     @JsonProperty("email")
-    private val _email: String?
+    private val _email: String?,
+
+    @field:NotBlank
+    @JsonProperty("recaptchaResponse")
+    private val _recaptchaResponse: String?
 ){
     val email: String
         get() = _email!!
+
+    val recaptchaResponse: String
+        get() = _recaptchaResponse!!
 }
 
 data class FindPasswordByEmailResetPasswordDtoRequest(
@@ -228,13 +242,20 @@ data class FindPasswordByEmailSendEmailDtoRequest(
     @field:NotBlank
     @field:Email
     @JsonProperty("email")
-    private val _email: String?
+    private val _email: String?,
+
+    @field:NotBlank
+    @JsonProperty("recaptchaResponse")
+    private val _recaptchaResponse: String?
 ){
     val userId: String
         get() = _userId!!
 
     val email: String
         get() = _email!!
+
+    val recaptchaResponse: String
+        get() = _recaptchaResponse!!
 }
 
 
@@ -291,10 +312,17 @@ data class SignUpVerificationSendEmailDtoRequest(
     @field:NotBlank
     @field:Email
     @JsonProperty("email")
-    private val _email: String?
+    private val _email: String?,
+
+    @field:NotBlank
+    @JsonProperty("recaptchaResponse")
+    private val _recaptchaResponse: String?
 ){
     val email: String
         get() = _email!!
+
+    val recaptchaResponse: String
+        get() = _recaptchaResponse!!
 }
 
 data class VerificationCheckEmailDtoRequest(

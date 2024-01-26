@@ -1,5 +1,6 @@
 package com.example.demo.member.service
 
+import com.example.demo.common.config.RecaptchaService
 import com.example.demo.common.login.TokenInfo
 import com.example.demo.common.login.jwt.JwtTokenProvider
 import com.example.demo.common.redis.dto.EmailVerificationDto
@@ -28,16 +29,17 @@ import org.springframework.stereotype.Service
 @Transactional
 @Service
 class MemberService(
-    private val memberRepository: MemberRepository,
-    private val memberRoleRepository: MemberRoleRepository,
-    private val jwtTokenProvider: JwtTokenProvider,
-    private val passwordEncoder: PasswordEncoder,
-    private val refreshTokenInfoRepositoryRedis: RefreshTokenInfoRepositoryRedis,
-    private val socialTokenRepositoryRedis: SocialTokenRepositoryRedis,
-    private val loginAttemptRepositoryRedis: LoginAttemptRepositoryRedis,
-    private val ipAddressAttemptRepositoryRedis: IpAddressAttemptRepositoryRedis,
-    private val emailVerificationRepositoryRedis: EmailVerificationRepositoryRedis,
-    private val mailUtil: MailUtil
+        private val memberRepository: MemberRepository,
+        private val memberRoleRepository: MemberRoleRepository,
+        private val jwtTokenProvider: JwtTokenProvider,
+        private val passwordEncoder: PasswordEncoder,
+        private val refreshTokenInfoRepositoryRedis: RefreshTokenInfoRepositoryRedis,
+        private val socialTokenRepositoryRedis: SocialTokenRepositoryRedis,
+        private val loginAttemptRepositoryRedis: LoginAttemptRepositoryRedis,
+        private val ipAddressAttemptRepositoryRedis: IpAddressAttemptRepositoryRedis,
+        private val emailVerificationRepositoryRedis: EmailVerificationRepositoryRedis,
+        private val recaptchaService: RecaptchaService,
+        private val mailUtil: MailUtil
 ) {
     /**
      * 회원가입
@@ -62,14 +64,15 @@ class MemberService(
     /**
      * 회원가입 - 이메일 인증번호 발송
      */
-    fun signUpVerificationSendEmail(request: HttpServletRequest, signUpVerificationSendEmailDtoRequest: SignUpVerificationSendEmailDtoRequest): EmailVerificationDtoResponse {
+    fun signUpVerificationSendEmail(signUpVerificationSendEmailDtoRequest: SignUpVerificationSendEmailDtoRequest): EmailVerificationDtoResponse {
+        recaptchaService.verifyRecaptchaComplete(signUpVerificationSendEmailDtoRequest.recaptchaResponse)
         checkDuplicateEmail(signUpVerificationSendEmailDtoRequest.email) // email 중복 검사
+
         return verificationSendEmail(
             "SignUp",
             signUpVerificationSendEmailDtoRequest.email,
             "회원가입 인증번호 안내",
-            "회원가입을 위해서 아래 인증코드를 입력해주세요.",
-            request
+            "회원가입을 위해서 아래 인증코드를 입력해주세요."
         )
     }
 
@@ -146,7 +149,8 @@ class MemberService(
      * 아이디 찾기 (이메일로 찾기)
      */
     fun findUserIdByEmail(request: HttpServletRequest, findUserIdByEmailDto: FindUserIdByEmailDto): String {
-        checkEmailVerificationAttempt(request) // 일정기간 동안 이메일 최대 전송 횟수 제한 (아이피 검사)
+//        checkEmailVerificationAttempt(request) // 일정기간 동안 이메일 최대 전송 횟수 제한 (아이피 검사)
+        recaptchaService.verifyRecaptchaComplete(findUserIdByEmailDto.recaptchaResponse)
 
         val member: Member = memberFindByEmail(findUserIdByEmailDto.email)
 
@@ -185,7 +189,9 @@ class MemberService(
     /**
      * 비밀번호 찾기 - 이메일 인증번호 발송
      */
-    fun findPasswordByEmailSendEmail(request: HttpServletRequest, findPasswordByEmailSendEmailDtoRequest: FindPasswordByEmailSendEmailDtoRequest): EmailVerificationDtoResponse {
+    fun findPasswordByEmailSendEmail(findPasswordByEmailSendEmailDtoRequest: FindPasswordByEmailSendEmailDtoRequest): EmailVerificationDtoResponse {
+        recaptchaService.verifyRecaptchaComplete(findPasswordByEmailSendEmailDtoRequest.recaptchaResponse)
+
         val member: Member = memberRepository.findByUserIdAndEmail(
             findPasswordByEmailSendEmailDtoRequest.userId,
             findPasswordByEmailSendEmailDtoRequest.email
@@ -199,8 +205,7 @@ class MemberService(
             "FindPassword",
             findPasswordByEmailSendEmailDtoRequest.email,
             "비밀번호 찾기를 위한 인증번호 안내",
-            "${member.userId}님, 비밀번호 찾기를 위해서 아래 인증코드를 입력해주세요.",
-            request
+            "${member.userId}님, 비밀번호 찾기를 위해서 아래 인증코드를 입력해주세요."
         )
     }
 
@@ -335,7 +340,9 @@ class MemberService(
     /**
      * 이메일 수정 - 이메일 코드 전송
      */
-    fun updateMemberEmailSendEmail(request: HttpServletRequest, userId: String, memberEmailUpdateDtoRequest: MemberEmailUpdateDtoRequest): EmailVerificationDtoResponse {
+    fun updateMemberEmailSendEmail(userId: String, memberEmailUpdateDtoRequest: MemberEmailUpdateDtoRequest): EmailVerificationDtoResponse {
+        recaptchaService.verifyRecaptchaComplete(memberEmailUpdateDtoRequest.recaptchaResponse)
+
         val member: Member = memberFindByUserId(userId)
         validatePassword(memberEmailUpdateDtoRequest.currentPassword, member) // 현재 비밀번호가 맞는지 확인
 
@@ -349,8 +356,7 @@ class MemberService(
             "EmailUpdate",
             memberEmailUpdateDtoRequest.email,
             "이메일 업데이트 인증번호 안내",
-             "${member.userId}님의 이메일 업데이트를 위해서 아래 인증코드를 입력해주세요.",
-            request
+             "${member.userId}님의 이메일 업데이트를 위해서 아래 인증코드를 입력해주세요."
         )
     }
 
@@ -508,22 +514,26 @@ class MemberService(
         return true
     }
 
+    /**
+     * 임시로 아이피제한을 걸어놓는 로직을 짰지만, Captcha 도입을 위해 주석 처리함
+     */
+    /*
     private fun checkEmailVerificationAttempt(request: HttpServletRequest) {
-        // 임시로 아이피제한을 걸어놓았지만, 추후에는 Captcha 도입을 해야할듯.
         val checkAttempt: Boolean = checkIpAddressAttempt(request, "emailVerificationAttempt", 10) // 1분 최대 10번으로 제한
         require(checkAttempt) {
             "너무 많은 시도를 하였습니다. 잠시 후에 시도해주세요."
         }
     }
+    */
 
     private fun verificationSendEmail(
         name: String,
         emailAddress: String,
         emailSubject: String,
         emailContent: String,
-        request: HttpServletRequest
+//        request: HttpServletRequest
     ): EmailVerificationDtoResponse {
-        checkEmailVerificationAttempt(request) // 일정기간 동안 이메일 최대 전송 횟수 제한 (아이피 검사)
+//        checkEmailVerificationAttempt(request) // 일정기간 동안 이메일 최대 전송 횟수 제한 (아이피 검사)
 
         val verificationToken: String = RandomUtil().generateRandomString(32)
         val verificationNumber: String = RandomUtil().generateRandomNumber(6)
