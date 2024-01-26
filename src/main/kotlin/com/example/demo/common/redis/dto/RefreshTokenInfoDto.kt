@@ -16,13 +16,14 @@ data class RefreshTokenInfoDto(
     val secret: String = RandomUtil().generateRandomString(15),
     val date: String = DateUtil().getCurrentTime(),
 ) : Serializable {
-    fun toResponse(): RefreshTokenInfoDtoResponse {
+    fun toResponse(refreshToken: String): RefreshTokenInfoDtoResponse {
         return RefreshTokenInfoDtoResponse(
             userId = userId,
             header = header,
             browser = browser,
             os = os,
             ipAddress = ipAddress,
+            current = this.refreshToken == refreshToken,
             secret = secret,
             date = date
         )
@@ -35,6 +36,7 @@ data class RefreshTokenInfoDtoResponse(
     val browser: String?,
     val os: String?,
     val ipAddress: String?,
+    val current: Boolean, // 현재 기기인지 확인
     val secret: String,
     val date: String
 ) : Serializable
@@ -48,7 +50,7 @@ data class RefreshTokenDeleteDto(
         get() = _secret!!
 }
 
-data class LogoutRefreshTokenDto(
+data class RefreshTokenDto(
         @field:NotBlank
         @JsonProperty("refreshToken")
         private val _refreshToken: String?,

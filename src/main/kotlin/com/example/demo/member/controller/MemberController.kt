@@ -3,10 +3,7 @@ package com.example.demo.member.controller
 import com.example.demo.common.dto.BaseResponse
 import com.example.demo.common.dto.CustomPrincipal
 import com.example.demo.common.login.TokenInfo
-import com.example.demo.common.redis.dto.EmailVerificationDtoResponse
-import com.example.demo.common.redis.dto.LogoutRefreshTokenDto
-import com.example.demo.common.redis.dto.RefreshTokenDeleteDto
-import com.example.demo.common.redis.dto.RefreshTokenInfoDtoResponse
+import com.example.demo.common.redis.dto.*
 import com.example.demo.member.dto.*
 import com.example.demo.member.service.MemberService
 import jakarta.servlet.http.HttpServletRequest
@@ -134,18 +131,18 @@ class MemberController(
      * 모든 Refresh 토큰 정보 확인
      * 기기 정보 확인 API
      */
-    @GetMapping("/token/refresh/list")
-    fun getRefreshTokenList(): BaseResponse<List<RefreshTokenInfoDtoResponse>> {
-        val response = memberService.getRefreshTokenList(getMemberUserId())
+    @PostMapping("/token/refresh/list")
+    fun refreshTokenList(@RequestBody @Valid refreshTokenDto: RefreshTokenDto): BaseResponse<List<RefreshTokenInfoDtoResponse>> {
+        val response = memberService.refreshTokenList(getMemberUserId(), refreshTokenDto.refreshToken)
         return BaseResponse(data = response)
     }
 
     /**
      * 특정 Refresh 토큰 제거 API
      */
-    @PostMapping("/token/refresh/list/delete")
-    fun deleteRefreshTokenList(@RequestBody @Valid refreshTokenDeleteDto: RefreshTokenDeleteDto): BaseResponse<Unit> {
-        val resultMsg: String = memberService.deleteRefreshTokenList(getMemberUserId(), refreshTokenDeleteDto.secret)
+    @PostMapping("/token/refresh/delete")
+    fun deleteRefreshToken(@RequestBody @Valid refreshTokenDeleteDto: RefreshTokenDeleteDto): BaseResponse<Unit> {
+        val resultMsg: String = memberService.deleteRefreshToken(getMemberUserId(), refreshTokenDeleteDto.secret)
         return BaseResponse(statusMessage = resultMsg)
     }
 
@@ -154,8 +151,8 @@ class MemberController(
      * 특정 Refresh 토큰 제거
      */
     @PostMapping("/token/refresh/logout")
-    fun logoutRefreshToken(@RequestBody @Valid logoutRefreshTokenDto: LogoutRefreshTokenDto): BaseResponse<Unit> {
-        memberService.deleteRefreshToken(logoutRefreshTokenDto.refreshToken)
+    fun logoutRefreshToken(@RequestBody @Valid refreshTokenDto: RefreshTokenDto): BaseResponse<Unit> {
+        memberService.deleteRefreshToken(refreshTokenDto.refreshToken)
         return BaseResponse()
     }
 
