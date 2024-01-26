@@ -25,7 +25,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           java-version: '17'
-          distribution: 'zulu'
+          distribution: 'corretto'
 
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
@@ -34,6 +34,17 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build
         shell: bash
+
+      - name: Set Yaml
+        uses: microsoft/variable-substitution@v1
+        with:
+          files: ./src/main/resources/application-prod.yml
+        env:
+          spring.datasource.url: ${{ secrets.DB_URL }}
+          spring.datasource.username: ${{ secrets.DB_USERNAME }}
+          spring.datasource.password: ${{ secrets.DB_PASSWORD }}
+          jwt.access_secret: ${{ secrets.JWT_ACCESS_SECRET }}
+          jwt.refresh_secret: ${{ secrets.JWT_REFRESH_SECRET }}
         
       - name: Make zip file
         run: zip -r ./$GITHUB_SHA.zip .
