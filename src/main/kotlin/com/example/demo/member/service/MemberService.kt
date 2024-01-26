@@ -8,6 +8,7 @@ import com.example.demo.common.redis.dto.RefreshTokenInfoDto
 import com.example.demo.common.redis.dto.RefreshTokenInfoDtoResponse
 import com.example.demo.common.redis.repository.*
 import com.example.demo.common.status.ROLE
+import com.example.demo.common.status.UserType
 import com.example.demo.member.dto.*
 import com.example.demo.member.entity.Member
 import com.example.demo.member.entity.MemberRole
@@ -149,7 +150,7 @@ class MemberService(
 
         val member: Member = memberFindByEmail(findUserIdByEmailDto.email)
 
-        require(member.socialId.isNullOrEmpty()){
+        require(member.userType != UserType.SOCIAL){
             "'${member.socialType!!.ko}' 소셜 회원으로 가입된 계정입니다."
         }
 
@@ -190,7 +191,7 @@ class MemberService(
             findPasswordByEmailSendEmailDtoRequest.email
         ) ?: throw IllegalArgumentException("아이디와 이메일이 일치하는 회원이 없습니다.")
 
-        require(member.socialId.isNullOrEmpty()){
+        require(member.userType != UserType.SOCIAL){
             "'${member.socialType!!.ko}' 소셜 회원으로 가입된 계정입니다."
         }
 
@@ -217,7 +218,7 @@ class MemberService(
     /**
      * 특정 Refresh 토큰 삭제 - 리스트에서
      */
-    fun deleteRefreshTokenList(userId: String, secret: String): String {
+    fun deleteRefreshToken(userId: String, secret: String): String {
         val deleteBySecret: Boolean = refreshTokenInfoRepositoryRedis.deleteBySecret(userId, secret)
         require(deleteBySecret){
             "찾을 수 없는 토큰입니다."
@@ -264,10 +265,10 @@ class MemberService(
      * 모든 Refresh 토큰 정보 가져오기
      * 실제로는 Refresh 토큰을 Response에 넘기지는 않음
      */
-    fun getRefreshTokenList(userId: String): List<RefreshTokenInfoDtoResponse> {
+    fun refreshTokenList(userId: String, refreshToken: String): List<RefreshTokenInfoDtoResponse> {
         return refreshTokenInfoRepositoryRedis
             .findByUserId(userId)
-            .map { x -> x.toResponse() }
+            .map { x -> x.toResponse(refreshToken) }
             .sortedBy { x -> x.date }
             .reversed()
     }
@@ -385,7 +386,7 @@ class MemberService(
         password: String,
         member: Member
     ) {
-        require(member.socialId.isNullOrEmpty()) {
+        require(member.userType != UserType.SOCIAL) {
             "소셜 로그인 회원은 이용이 불가합니다."
         }
         require(passwordEncoder.matches(password, member.password)) {
@@ -410,7 +411,7 @@ class MemberService(
     private fun checkDuplicateEmail(email: String) {
         val findMember: Member? = memberRepository.findByEmail(email)
         if (findMember != null) {
-            require(findMember.socialType == null){
+            require(findMember.userType != UserType.SOCIAL){
                 "'${findMember.socialType!!.ko}' 소셜 회원으로 이미 가입된 계정입니다."
             }
             throw IllegalArgumentException("이미 등록된 이메일입니다.")

@@ -23,6 +23,11 @@ enum class ROLE {
     MEMBER
 }
 
+enum class UserType {
+    EMAIL,
+    SOCIAL
+}
+
 enum class SocialType(val ko: String) {
     KAKAO("카카오"),
     NAVER("네이버"),

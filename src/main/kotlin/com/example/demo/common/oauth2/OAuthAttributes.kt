@@ -5,6 +5,7 @@ import com.example.demo.common.oauth2.userinfo.KakaoOAuth2UserInfo
 import com.example.demo.common.oauth2.userinfo.NaverOAuth2UserInfo
 import com.example.demo.common.oauth2.userinfo.OAuth2UserInfo
 import com.example.demo.common.status.SocialType
+import com.example.demo.common.status.UserType
 import com.example.demo.member.entity.Member
 import com.example.demo.util.RandomUtil
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -31,6 +32,7 @@ class OAuthAttributes(// OAuth2 로그인 진행 시 키가 되는 필드 값, P
             email = oauth2UserInfo.email, // oauth2 이메일
             nick = oauth2UserInfo.nickname + "_" + RandomUtil().generateRandomString(6), // nick_랜덤
             imageUrl = oauth2UserInfo.imageUrl,
+            userType = UserType.SOCIAL,
             socialType = socialType,
             socialId = oauth2UserInfo.id,
             socialNick = oauth2UserInfo.nickname,

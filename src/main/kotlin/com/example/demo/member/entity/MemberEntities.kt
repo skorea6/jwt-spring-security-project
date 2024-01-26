@@ -4,6 +4,7 @@ import com.example.demo.common.domain.AuditingFields
 import com.example.demo.common.status.Gender
 import com.example.demo.common.status.ROLE
 import com.example.demo.common.status.SocialType
+import com.example.demo.common.status.UserType
 import com.example.demo.member.dto.MemberDtoResponse
 import jakarta.persistence.*
 import java.time.LocalDate
@@ -42,6 +43,10 @@ class Member(
 
     @Column(length = 20)
     @Enumerated(EnumType.STRING)
+    var userType: UserType? = null, // 일반회원 or 소셜회원 구분
+
+    @Column(length = 20)
+    @Enumerated(EnumType.STRING)
     var socialType: SocialType? = null, // KAKAO, NAVER, GOOGLE
 
     @Column(length = 100)
@@ -70,7 +75,7 @@ class Member(
 
     fun toDto(): MemberDtoResponse =
         MemberDtoResponse(id!!, userId, email, nick, name, birthDate?.formatDate(), gender?.name, imageUrl,
-            !socialId.isNullOrEmpty(), socialType?.name, socialNick)
+            userType?.name, socialType?.name, socialNick)
 
     fun existsMemberForSocial(socialType: SocialType?, socialId: String?, socialNick: String?, imageUrl: String?) {
         this.socialType = socialType
