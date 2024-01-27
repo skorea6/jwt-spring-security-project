@@ -10,7 +10,7 @@ import java.util.*
 @SpringBootApplication
 class DemoApplication{
 	@PostConstruct
-	fun started() {
+	fun init() {
 		TimeZone.setDefault(TimeZone.getTimeZone("Asia/Seoul"))
 	}
 }
