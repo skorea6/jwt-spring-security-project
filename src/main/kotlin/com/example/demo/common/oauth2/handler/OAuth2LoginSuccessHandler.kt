@@ -6,6 +6,7 @@ import com.example.demo.util.RandomUtil
 import jakarta.servlet.ServletException
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.Authentication
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler
 import org.springframework.stereotype.Component
@@ -16,9 +17,10 @@ import java.io.IOException
 @Component
 @Transactional
 class OAuth2LoginSuccessHandler(
-    private val socialTokenRepositoryRedis: SocialTokenRepositoryRedis
+    private val socialTokenRepositoryRedis: SocialTokenRepositoryRedis,
+    @Value("\${frontend.url}")
+    val frontendUrl: String
 ) : AuthenticationSuccessHandler {
-
 
     @Throws(IOException::class, ServletException::class)
     override fun onAuthenticationSuccess(
@@ -34,9 +36,9 @@ class OAuth2LoginSuccessHandler(
 
             // Member의 isSocialGuest가 true면 처음 요청한 회원이므로 임시 커스텀 토큰 발급 후 프론트의 소셜 회원가입 URL로 이동
             if (oAuth2User.isSocialGuest) {
-                response.sendRedirect("http://localhost:3000/auth/signup/social?token=$socialToken") // 프론트 소셜 회원가입 URL
+                response.sendRedirect("$frontendUrl/auth/signup/social?token=$socialToken") // 프론트 소셜 회원가입 URL
             } else {
-                response.sendRedirect("http://localhost:3000/auth/login/social?token=$socialToken") // 프론트 소셜 로그인 URL
+                response.sendRedirect("$frontendUrl/auth/login/social?token=$socialToken") // 프론트 소셜 로그인 URL
             }
         } catch (e: Exception) {
             throw e
