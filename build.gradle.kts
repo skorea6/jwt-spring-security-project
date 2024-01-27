@@ -52,6 +52,12 @@ tasks.withType<KotlinCompile> {
 	}
 }
 
+tasks.withType<Jar> {
+	manifest {
+		attributes["Main-Class"] = "com.example.demo"
+	}
+}
+
 tasks.withType<Test> {
 	useJUnitPlatform()
 }
