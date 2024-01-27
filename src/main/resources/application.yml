@@ -94,3 +94,5 @@ aws:
   ses:
     access_key: access_key
     secret_key: secret_key
+frontend:
+  url: http://localhost:8080

@@ -18,12 +18,15 @@ spring:
           google:
             client-id: client-id
             client-secret: client-secret
+            redirect-uri: http://ec2-13-125-234-196.ap-northeast-2.compute.amazonaws.com/login/oauth2/code/google
           naver:
             client-id: client-id
             client-secret: client-secret
+            redirect-uri: http://ec2-13-125-234-196.ap-northeast-2.compute.amazonaws.com/login/oauth2/code/naver
           kakao:
             client-id: client-id
             client-secret: client-secret
+            redirect-uri: http://ec2-13-125-234-196.ap-northeast-2.compute.amazonaws.com/login/oauth2/code/kakao
   jpa:
     hibernate:
       ddl-auto: none
@@ -54,3 +57,5 @@ aws:
 jwt:
   access_secret: access_secret
   refresh_secret: refresh_secret
+frontend:
+  url: http://ec2-13-125-234-196.ap-northeast-2.compute.amazonaws.com
