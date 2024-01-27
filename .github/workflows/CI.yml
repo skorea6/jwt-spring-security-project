@@ -32,6 +32,15 @@ jobs:
           spring.datasource.url: ${{ secrets.DB_URL }}
           spring.datasource.username: ${{ secrets.DB_USERNAME }}
           spring.datasource.password: ${{ secrets.DB_PASSWORD }}
+          spring.security.oauth2.client.registration.google.client-id: ${{ secrets.OAUTH2_GOOGLE_CLIENT_ID }}
+          spring.security.oauth2.client.registration.google.client-secret: ${{ secrets.OAUTH2_GOOGLE_CLIENT_SECRET }}
+          spring.security.oauth2.client.registration.naver.client-id: ${{ secrets.OAUTH2_NAVER_CLIENT_ID }}
+          spring.security.oauth2.client.registration.naver.client-secret: ${{ secrets.OAUTH2_NAVER_CLIENT_SECRET }}
+          spring.security.oauth2.client.registration.kakao.client-id: ${{ secrets.OAUTH2_KAKAO_CLIENT_ID }}
+          spring.security.oauth2.client.registration.kakao.client-secret: ${{ secrets.OAUTH2_KAKAO_CLIENT_SECRET }}
+          recaptcha.secret: ${{ secrets.RECAPTCHA_SECRET }}
+          aws.ses.access_key: ${{ secrets.AWS_SES_ACCESS_KEY }}
+          aws.ses.secret_key: ${{ secrets.AWS_SES_SECRET_KEY }}
           jwt.access_secret: ${{ secrets.JWT_ACCESS_SECRET }}
           jwt.refresh_secret: ${{ secrets.JWT_REFRESH_SECRET }}
 
