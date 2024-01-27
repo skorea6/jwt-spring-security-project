@@ -58,4 +58,4 @@ jwt:
   access_secret: access_secret
   refresh_secret: refresh_secret
 frontend:
-  url: http://ec2-13-125-234-196.ap-northeast-2.compute.amazonaws.com
+  url: http://localhost:3000
