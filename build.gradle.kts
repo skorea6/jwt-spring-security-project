@@ -54,7 +54,7 @@ tasks.withType<KotlinCompile> {
 
 tasks.withType<Jar> {
 	manifest {
-		attributes["Main-Class"] = "com.example.demo"
+		attributes["Main-Class"] = "com.example.demo.DemoApplication"
 	}
 }
 
