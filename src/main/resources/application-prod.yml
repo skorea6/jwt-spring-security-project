@@ -6,6 +6,24 @@ spring:
     add-properties: false
     livereload:
       enabled: false
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: url
+    username: username
+    password: password
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: client-id
+            client-secret: client-secret
+          naver:
+            client-id: client-id
+            client-secret: client-secret
+          kakao:
+            client-id: client-id
+            client-secret: client-secret
   jpa:
     hibernate:
       ddl-auto: none
@@ -26,3 +44,13 @@ logging:
       hibernate:
         SQL: error
         type.descriptor.sql: error
+
+recaptcha:
+  secret: secret
+aws:
+  ses:
+    access_key: access_key
+    secret_key: secret_key
+jwt:
+  access_secret: access_secret
+  refresh_secret: refresh_secret
