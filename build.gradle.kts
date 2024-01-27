@@ -52,10 +52,8 @@ tasks.withType<KotlinCompile> {
 	}
 }
 
-tasks.withType<Jar> {
-	manifest {
-		attributes["Main-Class"] = "com.example.demo.DemoApplication"
-	}
+tasks.named("jar").configure {
+	enabled = false
 }
 
 tasks.withType<Test> {
