@@ -24,6 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import org.springframework.security.web.context.SecurityContextHolderFilter
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.CorsUtils
@@ -72,7 +73,7 @@ class SecurityConfig(
             // 순서 : customUsernamePasswordAuthenticationFilter -> JwtAuthenticationFilter -> UsernamePasswordAuthenticationFilter
             .addFilterBefore(
                 CorsFilter(corsConfigurationSource()),
-                UsernamePasswordAuthenticationFilter::class.java
+                SecurityContextHolderFilter::class.java
             )
             .addFilterBefore(
                 customUsernamePasswordAuthenticationFilter(), // 먼저 실행 (앞에 있는 필터가 통과하면 뒤에 있는 필터는 검사하지 않음)
