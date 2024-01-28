@@ -21,7 +21,11 @@ class CustomUsernamePasswordAuthenticationFilter(
 ) : AbstractAuthenticationProcessingFilter(DEFAULT_LOGIN_PATH_REQUEST_MATCHER) {
 
     @Throws(AuthenticationException::class, IOException::class)
-    override fun attemptAuthentication(request: HttpServletRequest, response: HttpServletResponse): Authentication {
+    override fun attemptAuthentication(request: HttpServletRequest, response: HttpServletResponse): Authentication? {
+        if (request.method.equals("OPTIONS")) {
+            return null
+        }
+
         if (request.contentType == null || CONTENT_TYPE !in request.contentType) {
             throw AuthenticationServiceException("Authentication Content-Type not supported: " + request.contentType)
         }

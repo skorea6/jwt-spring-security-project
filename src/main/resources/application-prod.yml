@@ -37,7 +37,7 @@ spring:
         highlight_sql: false
   data:
     redis:
-      host: localhost
+      host: 127.0.0.1
       port: 6379
 logging:
   pattern:
@@ -45,8 +45,8 @@ logging:
   level:
     org:
       hibernate:
-        SQL: debug
-        type.descriptor.sql: trace
+        SQL: error
+        type.descriptor.sql: error
 
 recaptcha:
   secret: secret
