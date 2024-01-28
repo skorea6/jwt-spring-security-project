@@ -2,8 +2,6 @@ server:
   port: 80
 
 spring:
-  mvc:
-    dispatch-options-request: true
   devtools:
     add-properties: false
     livereload:
