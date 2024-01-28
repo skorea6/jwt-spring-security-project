@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.util.StringUtils
-import org.springframework.web.cors.CorsUtils
 import org.springframework.web.filter.GenericFilterBean
 
 class JwtAuthenticationFilter(
@@ -17,7 +16,11 @@ class JwtAuthenticationFilter(
 
     override fun doFilter(request: ServletRequest?, response: ServletResponse?, chain: FilterChain?) {
         try {
-            if (CorsUtils.isPreFlightRequest(request as HttpServletRequest)) {
+//            if (CorsUtils.isPreFlightRequest(request as HttpServletRequest)) {
+//                return
+//            }
+
+            if ((request as HttpServletRequest).method.equals("OPTIONS")) {
                 return
             }
 
