@@ -27,6 +27,17 @@ jobs:
           java-version: '17'
           distribution: 'adopt'
 
+      # Gradle을 캐싱해둡니다 -> 빌드 속도가 증가하는 효과가 있습니다.
+      - name: Gradle 캐싱
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
       - name: Set Yaml
         uses: microsoft/variable-substitution@v1
         with:
@@ -68,7 +79,11 @@ jobs:
           
       # script files 복사
       - name: Copy script
-        run: cp ./scripts/*.sh ./deploy
+        run: |
+          cp ./scripts/*.sh ./deploy
+          cp ./docker/docker-compose.green.yml ./deploy
+          cp ./docker/docker-compose.blue.yml ./deploy
+          cp ./docker/Dockerfile ./deploy
       
       # S3에 업로드
       - name: Upload to S3
