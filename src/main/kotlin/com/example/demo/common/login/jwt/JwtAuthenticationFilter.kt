@@ -16,13 +16,6 @@ class JwtAuthenticationFilter(
 
     override fun doFilter(request: ServletRequest?, response: ServletResponse?, chain: FilterChain?) {
         try {
-//            if (CorsUtils.isPreFlightRequest(request as HttpServletRequest)) {
-//                return
-//            }
-
-//            if ((request as HttpServletRequest).method.equals("OPTIONS")) {
-//                return
-//            }
             val token = resolveToken(request as HttpServletRequest)
 
             if (jwtTokenProvider.validateAccessTokenForFilter(token)) {

@@ -66,14 +66,6 @@ class SecurityConfig(
                     .userInfoEndpoint { it.userService(customOAuth2UserService) } // customUserService 설정
             }
             // 순서 : customUsernamePasswordAuthenticationFilter -> JwtAuthenticationFilter -> UsernamePasswordAuthenticationFilter
-//            .addFilterBefore(
-//                CorsFilter(corsConfigurationSource()),
-//                UsernamePasswordAuthenticationFilter::class.java
-//            )
-//            .addFilterBefore(
-//                CorsFilter(corsConfigurationSource()),
-//                UsernamePasswordAuthenticationFilter::class.java
-//            )
             .addFilterBefore(
                 customUsernamePasswordAuthenticationFilter(), // 먼저 실행 (앞에 있는 필터가 통과하면 뒤에 있는 필터는 검사하지 않음)
                 UsernamePasswordAuthenticationFilter::class.java
@@ -118,8 +110,7 @@ class SecurityConfig(
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
         val config = CorsConfiguration()
-        config.allowedOriginPatterns = listOf("*")
-        config.allowedOrigins = listOf("http://localhost:3000", "https://jwt.abz.kr")
+        config.allowedOrigins = listOf(frontendUrl)
         config.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
         config.allowedHeaders = listOf("*")
         config.allowCredentials = true
