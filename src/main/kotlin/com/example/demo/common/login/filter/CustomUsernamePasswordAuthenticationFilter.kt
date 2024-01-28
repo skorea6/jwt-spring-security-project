@@ -11,6 +11,7 @@ import org.springframework.security.core.AuthenticationException
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 import org.springframework.util.StreamUtils
+import org.springframework.web.cors.CorsUtils
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 
@@ -22,7 +23,7 @@ class CustomUsernamePasswordAuthenticationFilter(
 
     @Throws(AuthenticationException::class, IOException::class)
     override fun attemptAuthentication(request: HttpServletRequest, response: HttpServletResponse): Authentication? {
-        if (request.method.equals("OPTIONS")) {
+        if (CorsUtils.isPreFlightRequest(request)) {
             return null
         }
 
