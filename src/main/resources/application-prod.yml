@@ -37,7 +37,7 @@ spring:
         highlight_sql: false
   data:
     redis:
-      host: localhost
+      host: 172.31.38.179
       port: 6379
 logging:
   pattern:
