@@ -9,7 +9,7 @@ enum class Gender(val desc: String) {
 
 enum class ResultCode(val statusCode: Int, val message: String) {
     SUCCESS(HttpStatus.OK.value(), "성공"), // 200
-    NOT_FOUND(HttpStatus.NOT_FOUND.value(), "요청하신 api를 찾을 수 없습니다."), // 404
+    NOT_FOUND(HttpStatus.NOT_FOUND.value(), "요청하신 api를 찾을 수 없습니다"), // 404
     BAD_REQUEST(HttpStatus.BAD_REQUEST.value(), "항목이 올바르지 않습니다"), // 400
     INVALID_DATA(HttpStatus.BAD_REQUEST.value(), "데이터 처리 오류 발생"), // 400
     INVALID_JSON(HttpStatus.INTERNAL_SERVER_ERROR.value(), "전달된 JSON 형식이 올바르지 않습니다"), // 400
