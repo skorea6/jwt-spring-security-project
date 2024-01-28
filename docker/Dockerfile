@@ -2,7 +2,7 @@
 FROM openjdk:17-jdk-slim
 
 # Dockerfile 내에서 사용할 변수 JAR_FILE을 정의
-ARG JAR_FILE=build/libs/*.jar
+ARG JAR_FILE=*.jar
 
 # JAR_FILE 경로에 해당하는 파일을 Docker 이미지 내부로 복사
 COPY ${JAR_FILE} spring-prod.jar
