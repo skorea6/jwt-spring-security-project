@@ -58,4 +58,4 @@ jwt:
   access_secret: access_secret
   refresh_secret: refresh_secret
 frontend:
-  url: http://localhost:3000
+  url: https://jwt.abz.kr
