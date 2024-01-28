@@ -114,7 +114,7 @@ class SecurityConfig(
     fun corsConfigurationSource(): CorsConfigurationSource {
         val config = CorsConfiguration()
         config.allowedOrigins = listOf(frontendUrl)
-        config.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
+        config.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "HEAD")
         config.allowedHeaders = listOf("*")
         config.allowCredentials = true
         config.maxAge = 3600L
