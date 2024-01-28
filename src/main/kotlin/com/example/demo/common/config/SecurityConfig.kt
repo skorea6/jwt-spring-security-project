@@ -27,6 +27,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
+import org.springframework.web.filter.CorsFilter
 
 
 @Configuration
@@ -70,6 +71,10 @@ class SecurityConfig(
 //                CorsFilter(corsConfigurationSource()),
 //                UsernamePasswordAuthenticationFilter::class.java
 //            )
+            .addFilterBefore(
+                CorsFilter(corsConfigurationSource()),
+                UsernamePasswordAuthenticationFilter::class.java
+            )
             .addFilterBefore(
                 customUsernamePasswordAuthenticationFilter(), // 먼저 실행 (앞에 있는 필터가 통과하면 뒤에 있는 필터는 검사하지 않음)
                 UsernamePasswordAuthenticationFilter::class.java

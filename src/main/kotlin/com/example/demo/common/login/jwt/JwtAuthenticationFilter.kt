@@ -23,7 +23,6 @@ class JwtAuthenticationFilter(
             if ((request as HttpServletRequest).method.equals("OPTIONS")) {
                 return
             }
-
             val token = resolveToken(request)
 
             if (jwtTokenProvider.validateAccessTokenForFilter(token)) {
