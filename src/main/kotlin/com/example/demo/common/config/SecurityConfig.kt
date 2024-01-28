@@ -27,7 +27,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
-import org.springframework.web.filter.CorsFilter
 
 
 @Configuration
@@ -51,7 +50,7 @@ class SecurityConfig(
             .httpBasic { it.disable() }
             .csrf { it.disable() }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
-//            .cors { it.configurationSource(corsConfigurationSource()) }
+            .cors { it.configurationSource(corsConfigurationSource()) }
             .authorizeHttpRequests {
                 it
 //                    .requestMatchers(CorsUtils::isPreFlightRequest).permitAll() // cors 해결을 위해 preflight 모두 허용
@@ -67,10 +66,10 @@ class SecurityConfig(
                     .userInfoEndpoint { it.userService(customOAuth2UserService) } // customUserService 설정
             }
             // 순서 : customUsernamePasswordAuthenticationFilter -> JwtAuthenticationFilter -> UsernamePasswordAuthenticationFilter
-            .addFilterBefore(
-                CorsFilter(corsConfigurationSource()),
-                UsernamePasswordAuthenticationFilter::class.java
-            )
+//            .addFilterBefore(
+//                CorsFilter(corsConfigurationSource()),
+//                UsernamePasswordAuthenticationFilter::class.java
+//            )
             .addFilterBefore(
                 customUsernamePasswordAuthenticationFilter(), // 먼저 실행 (앞에 있는 필터가 통과하면 뒤에 있는 필터는 검사하지 않음)
                 UsernamePasswordAuthenticationFilter::class.java
