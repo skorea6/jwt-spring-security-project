@@ -11,6 +11,7 @@ import com.example.demo.common.oauth2.handler.OAuth2LoginSuccessHandler
 import com.example.demo.common.oauth2.service.CustomOAuth2UserService
 import com.example.demo.member.service.MemberService
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.authentication.AuthenticationManager
@@ -39,7 +40,8 @@ class SecurityConfig(
     private val oAuth2LoginSuccessHandler: OAuth2LoginSuccessHandler,
     private val oAuth2LoginFailureHandler: OAuth2LoginFailureHandler,
     private val customUserDetailsService: CustomUserDetailsService,
-    private val customOAuth2UserService: CustomOAuth2UserService
+    private val customOAuth2UserService: CustomOAuth2UserService,
+    @Value("\${frontend.url}") private val frontendUrl: String
 ) {
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
@@ -109,7 +111,7 @@ class SecurityConfig(
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
         val config = CorsConfiguration()
-        config.allowedOrigins = listOf("http://localhost:3000")
+        config.allowedOrigins = listOf(frontendUrl)
         config.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
         config.allowedHeaders = listOf("*")
         config.allowCredentials = true
