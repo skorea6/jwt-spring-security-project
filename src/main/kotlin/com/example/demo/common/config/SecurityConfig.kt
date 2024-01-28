@@ -27,7 +27,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.context.SecurityContextHolderFilter
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
-import org.springframework.web.cors.CorsUtils
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 import org.springframework.web.filter.CorsFilter
 
@@ -53,12 +52,12 @@ class SecurityConfig(
             .httpBasic { it.disable() }
             .csrf { it.disable() }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
-            .cors { it.configurationSource(corsConfigurationSource()) }
+//            .cors { it.configurationSource(corsConfigurationSource()) }
             .authorizeHttpRequests {
                 it
 //                    .requestMatchers(CorsUtils::isPreFlightRequest)
 //                    .permitAll()
-                    .requestMatchers(CorsUtils::isPreFlightRequest).permitAll() // cors 해결을 위해 preflight 모두 허용
+//                    .requestMatchers(CorsUtils::isPreFlightRequest).permitAll() // cors 해결을 위해 preflight 모두 허용
                     .requestMatchers("/api/member/find/**", "/api/member/signup/**", "/api/member/login/oauth2", "/api/member/login", "/api/member/token/refresh/issue")
                     .anonymous()
                     .requestMatchers("/api/member/**").hasRole("MEMBER")

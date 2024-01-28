@@ -45,8 +45,8 @@ logging:
   level:
     org:
       hibernate:
-        SQL: error
-        type.descriptor.sql: error
+        SQL: debug
+        type.descriptor.sql: trace
 
 recaptcha:
   secret: secret
