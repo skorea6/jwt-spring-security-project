@@ -122,7 +122,7 @@ class SecurityConfig(
         config.allowedOrigins = listOf("http://localhost:3000", "https://jwt.abz.kr")
         config.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
         config.allowedHeaders = listOf("*")
-        config.allowCredentials = true
+//        config.allowCredentials = true
         config.maxAge = 3600L
 
         val source = UrlBasedCorsConfigurationSource()
