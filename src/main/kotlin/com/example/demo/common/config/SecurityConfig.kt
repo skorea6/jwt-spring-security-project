@@ -56,9 +56,9 @@ class SecurityConfig(
                 it
 //                    .requestMatchers(CorsUtils::isPreFlightRequest)
 //                    .permitAll()
+                    .requestMatchers(CorsUtils::isPreFlightRequest).permitAll() // cors 해결을 위해 preflight 모두 허용
                     .requestMatchers("/api/member/find/**", "/api/member/signup/**", "/api/member/login/oauth2", "/api/member/login", "/api/member/token/refresh/issue")
                     .anonymous()
-                    .requestMatchers(CorsUtils::isPreFlightRequest).permitAll() // cors 해결을 위해 preflight 모두 허용
                     .requestMatchers("/api/member/**").hasRole("MEMBER")
                     .anyRequest().permitAll()
             }
@@ -114,7 +114,7 @@ class SecurityConfig(
     fun corsConfigurationSource(): CorsConfigurationSource {
         val config = CorsConfiguration()
         config.allowedOrigins = listOf(frontendUrl)
-        config.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "HEAD")
+        config.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
         config.allowedHeaders = listOf("*")
         config.allowCredentials = true
         config.maxAge = 3600L
