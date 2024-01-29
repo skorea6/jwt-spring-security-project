@@ -57,5 +57,9 @@ aws:
 jwt:
   access_secret: access_secret
   refresh_secret: refresh_secret
+  expire:
+    access: 30 # 30 (30분)
+    refresh: 129600 # 60 * 24 * 30 * 3 (30일 * 3)
+    remain_refresh: 43200 # 60 * 24 * 30 (30일 * 1)
 frontend:
   url: https://jwt.abz.kr
