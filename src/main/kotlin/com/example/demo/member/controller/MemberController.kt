@@ -3,7 +3,10 @@ package com.example.demo.member.controller
 import com.example.demo.common.dto.BaseResponse
 import com.example.demo.common.dto.CustomPrincipal
 import com.example.demo.common.login.TokenInfo
-import com.example.demo.common.redis.dto.*
+import com.example.demo.common.redis.dto.EmailVerificationDtoResponse
+import com.example.demo.common.redis.dto.RefreshTokenDeleteDto
+import com.example.demo.common.redis.dto.RefreshTokenDto
+import com.example.demo.common.redis.dto.RefreshTokenInfoDtoResponse
 import com.example.demo.member.dto.*
 import com.example.demo.member.service.MemberService
 import jakarta.servlet.http.HttpServletRequest
@@ -209,6 +212,15 @@ class MemberController(
     @PostMapping("/update/email/check")
     fun updateMemberEmailCheckEmail(@RequestBody @Valid verificationCheckEmailDtoRequest: VerificationCheckEmailDtoRequest, request: HttpServletRequest): BaseResponse<Unit> {
         val response: String = memberService.updateMemberEmailCheckEmail(request, getMemberUserId(), verificationCheckEmailDtoRequest)
+        return BaseResponse(statusMessage = response)
+    }
+
+    /**
+     * 회원 탈퇴
+     */
+    @PostMapping("/delete")
+    fun deleteMember(@RequestBody @Valid memberDeleteDtoRequest: MemberDeleteDtoRequest): BaseResponse<Unit> {
+        val response: String = memberService.deleteMember(getMemberUserId(), memberDeleteDtoRequest)
         return BaseResponse(statusMessage = response)
     }
 

@@ -26,8 +26,6 @@ private const val BIRTH_DATE_MESSAGE = "날짜 형식(YYYY-MM-DD)을 확인해�
 private const val GENDER_MESSAGE = "MAN 이나 WOMAN 중 하나를 선택해주세요."
 
 data class MemberSignUpDtoRequest(
-    var id: Long?,
-
     @field:NotBlank
     @field:Pattern(regexp = USER_ID_PATTERN, message = USER_ID_MESSAGE)
     @JsonProperty("userId")
@@ -79,7 +77,6 @@ data class MemberSignUpDtoRequest(
 
     fun toEntity(email: String): Member =
         Member(
-            id = id,
             userId = userId,
             password = password,
             nick = nick,
@@ -256,6 +253,14 @@ data class FindPasswordByEmailSendEmailDtoRequest(
 
     val recaptchaResponse: String
         get() = _recaptchaResponse!!
+}
+
+data class MemberDeleteDtoRequest(
+    @JsonProperty("currentPassword")
+    private val _currentPassword: String?
+) {
+    val currentPassword: String?
+        get() = _currentPassword
 }
 
 

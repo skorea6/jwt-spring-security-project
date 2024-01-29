@@ -154,9 +154,7 @@ class MemberService(
 
         val member: Member = memberFindByEmail(findUserIdByEmailDto.email)
 
-        require(member.userType != UserType.SOCIAL){
-            "'${member.socialType!!.ko}' 소셜 회원으로 가입된 계정입니다."
-        }
+        exceptSocialMember(member, "already") // 소셜로 이미 가입된 계정이라는 메시지 출력
 
         mailUtil.send(
             SenderDto(
@@ -197,9 +195,7 @@ class MemberService(
             findPasswordByEmailSendEmailDtoRequest.email
         ) ?: throw IllegalArgumentException("아이디와 이메일이 일치하는 회원이 없습니다.")
 
-        require(member.userType != UserType.SOCIAL){
-            "'${member.socialType!!.ko}' 소셜 회원으로 가입된 계정입니다."
-        }
+        exceptSocialMember(member, "already") // 소셜로 이미 가입된 계정이라는 메시지 출력
 
         return verificationSendEmail(
             "FindPassword",
@@ -327,6 +323,7 @@ class MemberService(
     @CacheEvict(key = "#userId", value = ["userInfo"])
     fun updateMemberPassword(userId: String, memberPasswordUpdateDtoRequest: MemberPasswordUpdateDtoRequest): String {
         val member: Member = memberFindByUserId(userId)
+        exceptSocialMember(member, "basic")
         validatePassword(memberPasswordUpdateDtoRequest.currentPassword, member) // 현재 비밀번호가 맞는지 확인
 
         member.password = passwordEncoder.encode(memberPasswordUpdateDtoRequest.password)
@@ -344,6 +341,7 @@ class MemberService(
         recaptchaService.verifyRecaptchaComplete(memberEmailUpdateDtoRequest.recaptchaResponse)
 
         val member: Member = memberFindByUserId(userId)
+        exceptSocialMember(member, "basic")
         validatePassword(memberEmailUpdateDtoRequest.currentPassword, member) // 현재 비밀번호가 맞는지 확인
 
         require(member.email != memberEmailUpdateDtoRequest.email){
@@ -377,6 +375,27 @@ class MemberService(
         return "수정이 완료되었습니다."
     }
 
+    /**
+     * 회원탈퇴
+     */
+    @CacheEvict(key = "#userId", value = ["userInfo"])
+    fun deleteMember(userId: String, memberDeleteDtoRequest: MemberDeleteDtoRequest): String {
+        val member: Member = memberFindByUserId(userId)
+
+        // 소셜 회원이 아닌 경우 비밀번호 검사
+        if(member.userType != UserType.SOCIAL){
+            if(memberDeleteDtoRequest.currentPassword.isNullOrEmpty()){
+                throw IllegalArgumentException("현재 비밀번호를 입력해주세요")
+            }
+            validatePassword(memberDeleteDtoRequest.currentPassword!!, member)
+        }
+
+        memberRepository.deleteById(member.id!!)
+        deleteAllRefreshToken(member.userId) // 모든 기기 로그아웃
+
+        return "회원탈퇴가 완료되었습니다."
+    }
+
     private fun memberFindByUserId(userId: String): Member {
         return memberRepository.findByUserId(userId)
             ?: throw IllegalArgumentException("회원 아이디(${userId})가 존재하지 않는 유저입니다.")
@@ -392,11 +411,19 @@ class MemberService(
         password: String,
         member: Member
     ) {
-        require(member.userType != UserType.SOCIAL) {
-            "소셜 로그인 회원은 이용이 불가합니다."
-        }
         require(passwordEncoder.matches(password, member.password)) {
             "현재 비밀번호가 일치하지 않습니다."
+        }
+    }
+
+    private fun exceptSocialMember(member: Member, messageType: String) {
+        require(member.userType != UserType.SOCIAL) {
+            when(messageType){
+                "basic" -> "소셜 로그인 회원은 이용이 불가합니다."
+                else -> {
+                    "'${member.socialType!!.ko}' 소셜 회원으로 가입된 계정입니다."
+                }
+            }
         }
     }
 
@@ -417,9 +444,7 @@ class MemberService(
     private fun checkDuplicateEmail(email: String) {
         val findMember: Member? = memberRepository.findByEmail(email)
         if (findMember != null) {
-            require(findMember.userType != UserType.SOCIAL){
-                "'${findMember.socialType!!.ko}' 소셜 회원으로 이미 가입된 계정입니다."
-            }
+            exceptSocialMember(findMember, "already") // 소셜로 이미 가입된 계정이라는 메시지 출력
             throw IllegalArgumentException("이미 등록된 이메일입니다.")
         }
     }
