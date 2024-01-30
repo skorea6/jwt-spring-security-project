@@ -1,6 +1,7 @@
 package com.example.demo.member.repository
 
 import com.example.demo.common.status.SocialType
+import com.example.demo.member.entity.DeletedMember
 import com.example.demo.member.entity.Member
 import com.example.demo.member.entity.MemberRole
 import org.springframework.data.jpa.repository.JpaRepository
@@ -17,3 +18,5 @@ interface MemberRepository : JpaRepository<Member, Long> {
 }
 
 interface MemberRoleRepository : JpaRepository<MemberRole, Long>
+
+interface DeletedMemberRepository : JpaRepository<DeletedMember, Long>

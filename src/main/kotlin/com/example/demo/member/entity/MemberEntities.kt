@@ -77,6 +77,22 @@ class Member(
         MemberDtoResponse(id!!, userId, email, nick, name, birthDate?.formatDate(), gender?.name, imageUrl,
             userType?.name, socialType?.name, socialNick)
 
+    fun toDeletedMember(): DeletedMember {
+        return DeletedMember(
+            userId = this.userId,
+            email = this.email,
+            nick = this.nick,
+            name = this.name,
+            imageUrl = this.imageUrl,
+            userType = this.userType,
+            socialType = this.socialType,
+            socialId = this.socialId,
+            socialNick = this.socialNick,
+            birthDate = this.birthDate,
+            gender = this.gender
+        )
+    }
+
     fun existsMemberForSocial(socialType: SocialType?, socialId: String?, socialNick: String?, imageUrl: String?) {
         this.socialType = socialType
         this.socialId = socialId
@@ -108,3 +124,23 @@ class MemberRole(
     @JoinColumn(name = "member_id", foreignKey = ForeignKey(name = "fk_member_role_member_id"))
     val member: Member,
 )
+
+
+@Entity
+class DeletedMember(
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    var id: Long? = null,
+
+    val userId: String,
+    var email: String,
+    var nick: String,
+    var name: String? = null,
+    var imageUrl: String? = null,
+    @Enumerated(EnumType.STRING) var userType: UserType? = null,
+    @Enumerated(EnumType.STRING) var socialType: SocialType? = null,
+    var socialId: String? = null,
+    var socialNick: String? = null,
+    @Temporal(TemporalType.DATE) var birthDate: LocalDate? = null,
+    @Enumerated(EnumType.STRING) var gender: Gender? = null,
+): AuditingFields()

@@ -13,6 +13,7 @@ import com.example.demo.common.status.UserType
 import com.example.demo.member.dto.*
 import com.example.demo.member.entity.Member
 import com.example.demo.member.entity.MemberRole
+import com.example.demo.member.repository.DeletedMemberRepository
 import com.example.demo.member.repository.MemberRepository
 import com.example.demo.member.repository.MemberRoleRepository
 import com.example.demo.util.BrowserInfo
@@ -29,17 +30,18 @@ import org.springframework.stereotype.Service
 @Transactional
 @Service
 class MemberService(
-        private val memberRepository: MemberRepository,
-        private val memberRoleRepository: MemberRoleRepository,
-        private val jwtTokenProvider: JwtTokenProvider,
-        private val passwordEncoder: PasswordEncoder,
-        private val refreshTokenInfoRepositoryRedis: RefreshTokenInfoRepositoryRedis,
-        private val socialTokenRepositoryRedis: SocialTokenRepositoryRedis,
-        private val loginAttemptRepositoryRedis: LoginAttemptRepositoryRedis,
-        private val ipAddressAttemptRepositoryRedis: IpAddressAttemptRepositoryRedis,
-        private val emailVerificationRepositoryRedis: EmailVerificationRepositoryRedis,
-        private val recaptchaService: RecaptchaService,
-        private val mailUtil: MailUtil
+    private val memberRepository: MemberRepository,
+    private val deletedMemberRepository: DeletedMemberRepository,
+    private val memberRoleRepository: MemberRoleRepository,
+    private val jwtTokenProvider: JwtTokenProvider,
+    private val passwordEncoder: PasswordEncoder,
+    private val refreshTokenInfoRepositoryRedis: RefreshTokenInfoRepositoryRedis,
+    private val socialTokenRepositoryRedis: SocialTokenRepositoryRedis,
+    private val loginAttemptRepositoryRedis: LoginAttemptRepositoryRedis,
+    private val ipAddressAttemptRepositoryRedis: IpAddressAttemptRepositoryRedis,
+    private val emailVerificationRepositoryRedis: EmailVerificationRepositoryRedis,
+    private val recaptchaService: RecaptchaService,
+    private val mailUtil: MailUtil
 ) {
     /**
      * 회원가입
@@ -390,6 +392,7 @@ class MemberService(
             validatePassword(memberDeleteDtoRequest.currentPassword!!, member)
         }
 
+        deletedMemberRepository.save(member.toDeletedMember())
         memberRepository.deleteById(member.id!!)
         deleteAllRefreshToken(member.userId) // 모든 기기 로그아웃
 
