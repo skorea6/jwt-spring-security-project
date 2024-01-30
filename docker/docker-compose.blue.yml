@@ -10,3 +10,5 @@ services:
       - "8081:80"
     # 컨테이너의 이름
     container_name: spring-blue
+    environment:
+      - TZ=Asia/Seoul
