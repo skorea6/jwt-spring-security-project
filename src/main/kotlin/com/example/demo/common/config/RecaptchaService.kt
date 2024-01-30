@@ -12,11 +12,10 @@ import org.springframework.web.client.RestTemplate
 @Service
 class RecaptchaService(
     private val restTemplate: RestTemplate,
-    @Value("\${recaptcha.secret}") private val secretKey: String
+    @Value("\${recaptcha.url}") private val verifyUrl: String,
+    @Value("\${recaptcha.secret}") private val secretKey: String,
 ) {
-    fun verifyRecaptcha(response: String): Boolean {
-        val verifyUrl = "https://www.google.com/recaptcha/api/siteverify"
-
+    private fun verifyRecaptcha(response: String): Boolean {
         val params: MultiValueMap<String, String> = LinkedMultiValueMap()
         params.add("secret", secretKey)
         params.add("response", response)
