@@ -2,6 +2,7 @@ package com.example.demo.common.listener
 
 import com.example.demo.common.annotation.CreatedIp
 import com.example.demo.common.annotation.LastModifiedIp
+import com.example.demo.util.BrowserInfo
 import jakarta.persistence.PrePersist
 import jakarta.persistence.PreUpdate
 import org.springframework.web.context.request.RequestContextHolder
@@ -23,7 +24,7 @@ class IpAddressListener {
     }
 
     private fun setIp(target: Any, annotationClass: Class<out Annotation>) {
-        val ip: String? = getCurrentIp()
+        val ip: String = getCurrentIp()
 //        val filterIsInstance: List<KMutableProperty1<Any, *>> = target::class.memberProperties
 //            .filterIsInstance<KMutableProperty1<Any, *>>()
 //
@@ -49,8 +50,9 @@ class IpAddressListener {
         return this.annotations.firstOrNull { annotationClass.isInstance(it) }
     }
 
-    private fun getCurrentIp(): String? {
-        val attrs = RequestContextHolder.getRequestAttributes() as? ServletRequestAttributes
-        return attrs?.request?.remoteAddr
+    private fun getCurrentIp(): String {
+        val attrs = RequestContextHolder.getRequestAttributes() as? ServletRequestAttributes ?: return ""
+        val ipAddress: String = BrowserInfo().getIpAddress(attrs.request)
+        return ipAddress
     }
 }
