@@ -14,7 +14,7 @@ import java.time.LocalDateTime
 
 @EntityListeners(AuditingEntityListener::class) // auditing
 @MappedSuperclass
-abstract class AuditingFields : IpAuditingFields() {
+abstract class AuditingFields { // : IpAuditingFields()
     /**
      * [abstract class에 맞게 멤버변수들은 `protected`여야 한다]
      * 회원 엔티티가 이 부분을 직접 참조해야 하므로 protected
