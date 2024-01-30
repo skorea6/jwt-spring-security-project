@@ -29,7 +29,7 @@ spring:
             redirect-uri: https://api.jwt.abz.kr/login/oauth2/code/kakao
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update # 실제 prod에서는 none으로 설정해야함
     properties:
       hibernate:
         show_sql: false
