@@ -9,6 +9,10 @@
 - Redis
 - JSON (API)
 
+## Github CI/CD + AWS Diagram
+![diagram](https://github.com/skorea6/jwt-spring-security-project/assets/13993684/adcdd848-f3f4-4946-a843-a0acf09072e0)
+
+
 ## 목표
 - Spring Security 구조 파악 및 구현
 - JWT + OAuth2 깊게 파기
