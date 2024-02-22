@@ -6,6 +6,6 @@ import com.example.demo.util.DateUtil
 data class BaseResponse<T>(
     val statusCode: Int = ResultCode.SUCCESS.statusCode,
     val statusMessage: String? = ResultCode.SUCCESS.message,
-    val responseTime: String = DateUtil().getCurrentTime(),
+    val responseTime: String = DateUtil.getCurrentTime(),
     val data: T? = null
 )

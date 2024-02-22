@@ -14,7 +14,7 @@ data class RefreshTokenInfoDto(
     val os: String = "",
     val ipAddress: String = "",
     val secret: String = RandomUtil().generateRandomString(15),
-    val date: String = DateUtil().getCurrentTime(),
+    val date: String = DateUtil.getCurrentTime(),
 ) : Serializable {
     fun toResponse(refreshToken: String): RefreshTokenInfoDtoResponse {
         return RefreshTokenInfoDtoResponse(

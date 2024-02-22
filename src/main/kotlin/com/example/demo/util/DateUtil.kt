@@ -9,7 +9,7 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.*
 
-class DateUtil {
+object DateUtil {
     // 1일을 second로 환산한 값
     val ONE_DAY_SEC = (24 * 60 * 60).toLong()
 
