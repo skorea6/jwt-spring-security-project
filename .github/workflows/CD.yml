@@ -107,7 +107,7 @@ jobs:
           aws deploy create-deployment \
           --application-name jwt-project \
           --deployment-config-name CodeDeployDefault.AllAtOnce \
-          --deployment-group-name jwt-project-prod \
+          --deployment-group-name jwt-api-new \
           --file-exists-behavior OVERWRITE \
           --s3-location bucket=jwt-project-bucket,bundleType=zip,key=jwt-spring-security-project/$GITHUB_SHA.zip \
           --region ap-northeast-2 \
