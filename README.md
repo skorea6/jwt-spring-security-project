@@ -3,6 +3,8 @@
 ## Demo URL
 - 서비스(FE) Demo URL: [jwt.abz.kr](https://jwt.abz.kr)
 - API(BE) Demo URL: [api.jwt.abz.kr](https://api.jwt.abz.kr)
+  - 서버에 Docker, Nginx(loadbalancing)와 같은 기능을 함께 사용중인 관계로, 서버가 가끔 다운될 수 있습니다.
+  - Amazon EC2 t2.micro 사용중
 
 ![image](https://github.com/skorea6/jwt-spring-security-project/assets/13993684/c15937fa-ff8a-461c-bf35-55f963b6d032)
 - FrontEnd(React) Github URL: [https://github.com/skorea6/jwt-react](https://github.com/skorea6/jwt-react)
