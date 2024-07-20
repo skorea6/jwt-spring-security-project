@@ -36,6 +36,8 @@ out/
 ### VS Code ###
 .vscode/
 
-src/main/resources/application-secret.yml
+/src/main/resources/application-secret.yml
+/src/main/resources/application-prod.yml
+/src/main/resources/application-prod-aws.yml
 /lib/
 .DS_Store
