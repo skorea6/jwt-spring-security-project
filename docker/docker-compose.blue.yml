@@ -9,6 +9,13 @@ services:
     ports:
       - "8081:80"
     # 컨테이너의 이름
-    container_name: spring-blue
+    container_name: spring-jwt-blue
     environment:
       - TZ=Asia/Seoul
+    networks:
+      - servernetwork
+
+networks:
+  servernetwork:
+    external: true
+    driver: bridge

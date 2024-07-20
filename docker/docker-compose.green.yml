@@ -5,6 +5,13 @@ services:
     build: .
     ports:
       - "8082:80"
-    container_name: spring-green
+    container_name: spring-jwt-green
     environment:
       - TZ=Asia/Seoul
+    networks:
+      - servernetwork
+
+networks:
+  servernetwork:
+    external: true
+    driver: bridge
