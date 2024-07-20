@@ -33,7 +33,7 @@ pipeline{
             steps {
                 withCredentials([file(credentialsId: 'jwtProd', variable: 'jwtProd')]) {
                     script {
-                        sh 'cp jwtProd ./src/main/resources/application-prod.yml'
+                        sh 'cp $jwtProd ./src/main/resources/application-prod.yml'
                     }
                 }
             }
